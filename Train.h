@@ -68,8 +68,8 @@ public:
 
 class Train_System{
 private:
-    BPlusTree<String<21> , Train> trainID_BPT;
-    BPlusTree<String<21> , Train_Seat>  trainSeat_BPT;
+    BPlusTree<String<21> , Train, 100, 200> trainID_BPT;
+    BPlusTree<String<21> , Train_Seat, 100, 200>  trainSeat_BPT;
 
 public:
     Train_System(){

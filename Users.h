@@ -34,7 +34,7 @@ public:
 
 class user_System{
 private:
-    BPlusTree<String<21> , User, 400, 20000> username_BPT;
+    BPlusTree<String<21> , User, 200, 20000> username_BPT;
 
 public:
     user_System(){
