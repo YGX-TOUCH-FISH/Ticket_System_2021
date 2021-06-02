@@ -99,10 +99,11 @@ void add_user(std::string &cmd){
     }
     else {
         if (user_Online.find(String<21> (cur_user)) == user_Online.end()) throw "error";
-        vector<User> container;
-        container = userControl.find(String<21> (cur_user));
-        User cur = container[0];
-        if (cur.getPrivilege() <= pri) throw "error";
+//        vector<User> container;
+//        container = userControl.find(String<21> (cur_user));
+//        User cur = container[0];
+        int curPri = user_Online[String<21> (cur_user)];
+        if (curPri <= pri) throw "error";
         User u(String<21>(username) , String<31>(password) , String<20>(name) , String<31>(mailAddress) , pri , 0);
         userControl.add_user(u);
         std::cout << 0 << "\n";
