@@ -53,7 +53,7 @@ public:
 
 class Train_Seat{
 private:
-    int seat[90][90]{};
+    int seat[101][101]{};
 public:
     Train_Seat() = default;
     Train_Seat &operator=(const Train_Seat &t);
