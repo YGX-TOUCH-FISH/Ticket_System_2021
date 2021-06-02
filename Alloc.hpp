@@ -181,7 +181,7 @@ namespace RA {
 //                    cache_info(info_address) = internInfo;
 //                    cache_map[info_address]->isModified = true;
 //                }
-////            }
+//            }
 //            else {
             file.seekp(info_address);
             file.write(reinterpret_cast<const char *>(&internInfo), sizeof(internInfo));

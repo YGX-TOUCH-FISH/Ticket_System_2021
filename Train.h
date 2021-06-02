@@ -53,7 +53,7 @@ public:
 
 class Train_Seat{
 private:
-    int seat[101][101]{};
+    int seat[100][101]{};
 public:
     Train_Seat() = default;
     Train_Seat &operator=(const Train_Seat &t);
@@ -68,8 +68,8 @@ public:
 
 class Train_System{
 private:
-    BPlusTree<String<21> , Train, 100, 200> trainID_BPT;
-    BPlusTree<String<21> , Train_Seat, 100, 200>  trainSeat_BPT;
+    BPlusTree<String<21> , Train> trainID_BPT;
+    BPlusTree<String<21> , Train_Seat>  trainSeat_BPT;
 
 public:
     Train_System(){

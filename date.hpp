@@ -115,10 +115,16 @@ public:
 
     date &operator+=(const date &d){
         minute += d.minute;
-        hour += minute/60 + d.hour;
-        minute %= 60;
-        day += hour/24 + d.day;
-        hour %= 24;
+        while (minute >= 60){
+            hour++;
+            minute -= 60;
+        }
+        hour += d.hour;
+        while (hour >= 24){
+            day++;
+            hour -= 24;
+        }
+        day += d.day;
         while (true){
             if (month == 2){
                 if (day <= 28) break;

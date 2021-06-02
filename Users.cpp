@@ -57,7 +57,7 @@ void user_System::login(const String<21> &u , const String<31> &p){
     }
     User U = user_exist[0];
     if (U.password != p) throw "wrong password";
-    user_Online.insert(make_pair(u , U.privilege));
+    user_Online.insert(make_pair(u , 1));
 }
 
 void user_System::logout(const String<21> &u) {
