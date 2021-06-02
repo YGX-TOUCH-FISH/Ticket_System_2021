@@ -82,16 +82,10 @@ public:
     date operator+(const date &d) const{
         int M = month , D = day , h = hour , min = minute;
         min += d.minute;
-        while (min >= 60){
-            h++;
-            min -= 60;
-        }
-        h += d.hour;
-        while (h >= 24){
-            D++;
-            h -= 24;
-        }
-        D += d.day;
+        h += min/60 + d.hour;
+        min %= 60;
+        D += h/24 + d.day;
+        h %= 24;
         while (true){
             if (M == 2){
                 if (D <= 28) break;
@@ -191,7 +185,7 @@ public:
 //            m++;
 //        }
         date p(month, day, 0, 0), q(d.month, d.day, 0, 0);
-        int cnt = calMinute(p, q)/1440 + 1;
+        int cnt = (calMinute(p, q))/1440 + 1;
         return cnt;
     }
 
