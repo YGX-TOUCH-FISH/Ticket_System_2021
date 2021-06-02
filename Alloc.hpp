@@ -116,11 +116,29 @@ namespace RA {
             file.close();
         }
 
+        void clear() {
+            cache_map.clear();
+            cache_size = 0;
+            Binary_Node *ptr = head;
+            while (ptr) {
+                //清空缓存，不需要读进去
+                Binary_Node *tmp = ptr;
+                ptr = ptr->next;
+                delete tmp;
+            }
+            head = tail = nullptr;
+            file.close();
+        }
+
         void initialize(const string &filename) {
-            ofstream openfile(filename);
-            openfile.close();
+            fstream test;
+            test.open(filename);
+            if (test.fail()) {
+                ofstream openfile(filename);
+                openfile.close();
+            }
+            test.close();
             file.open(filename);
-            if (file.fail()) throw file_fail();
         }
 
         bool empty() {
@@ -141,33 +159,33 @@ namespace RA {
         void read(int info_address, InternInfo &internInfo) {
             if (info_address < 0) throw bad_read_flow();
 
-            if (cache_find(info_address)) internInfo = cache_info(info_address);
-            else {
+//            if (cache_find(info_address)) internInfo = cache_info(info_address);
+//            else {
                 file.seekg(info_address);
                 file.read(reinterpret_cast<char *>(&internInfo), sizeof(internInfo));
-                if (cache_size == CACHESIZE) {
-                    std::pair<int, InternInfo> out = cache_pop();
-                    if (out.first != -1) {
-                        file.seekp(out.first);
-                        file.write(reinterpret_cast<const char *>(&out.second), sizeof(InternInfo));
-                    }
-                }
-                cache_push(info_address, internInfo);
-            }
+//                if (cache_size == CACHESIZE) {
+//                    std::pair<int, InternInfo> out = cache_pop();
+//                    if (out.first != -1) {
+//                        file.seekp(out.first);
+//                        file.write(reinterpret_cast<const char *>(&out.second), sizeof(InternInfo));
+//                    }
+//                }
+//                cache_push(info_address, internInfo);
+//            }
         }
 
         void write(int info_address, const InternInfo &internInfo) {
             if (info_address < 0) throw bad_write_flow();
-            if (cache_map.find(info_address) != cache_map.end()) {
-                if (cache_info(info_address) != internInfo) {
-                    cache_info(info_address) = internInfo;
-                    cache_map[info_address]->isModified = true;
-                }
-            }
-            else {
-                file.seekp(info_address);
-                file.write(reinterpret_cast<const char *>(&internInfo), sizeof(internInfo));
-            }
+//            if (cache_map.find(info_address) != cache_map.end()) {
+//                if (cache_info(info_address) != internInfo) {
+//                    cache_info(info_address) = internInfo;
+//                    cache_map[info_address]->isModified = true;
+//                }
+//            }
+//            else {
+            file.seekp(info_address);
+            file.write(reinterpret_cast<const char *>(&internInfo), sizeof(internInfo));
+//            }
         }
     };
 }

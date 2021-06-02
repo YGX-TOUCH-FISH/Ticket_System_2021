@@ -18,10 +18,11 @@ private:
     String<20> name;
     String<31> mailAddress;
     int privilege{};
+    int TotalOrder = 0;
 
 public:
     User();
-    User(const String<21> &u , const String<31> &p , const String<20> &n, const String<31> &m , int pri);
+    User(const String<21> &u , const String<31> &p , const String<20> &n, const String<31> &m , int pri , int totalOrder);
 
     int getPrivilege() const;
     bool operator==(const User &rhs) const;
@@ -39,9 +40,11 @@ public:
     user_System(){
         username_BPT.initialize("users_BPT.dat" , "users.dat");
     }
+    void restart();
     vector<User> find(const String<21> &username);
-
+    bool empty();
     void add_user(User &u);
+    int user_addOrder(const String<21> &username);
     void login(const String<21> &u , const String<31> &p);
     void logout(const String<21>& u);
     void query_user(const User &u);

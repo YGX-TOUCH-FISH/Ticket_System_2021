@@ -124,9 +124,7 @@ namespace RA {
         DiskMonitor<value_type, int, CACHESIZE> dataFile;
         /*  关联原始数据记录文件       */
     private:
-        bool isEmpty() const {
-            return treeInfo.root == -1;
-        }
+
 /*------search-by-B+tree-index---------------------------------------------------------*/
         int Scan_to_End(const Key &key, node &ntr) {
             int son_node = treeInfo.root;
@@ -145,6 +143,7 @@ namespace RA {
             node ntr;
             value_type record;
             int ntr_address;
+            if (isEmpty()) return;
             Scan_to_End(key, ntr);
             while (true) {
                 for (int i = lower_bound(ntr.Index, ntr.Size, key) ; i <= ntr.Size ; ++i) {
@@ -702,6 +701,8 @@ namespace RA {
                 dataFile.write_HeadInfo(data_end);
             }
             else dataFile.read_HeadInfo(data_end);
+
+
         }
 
         ~BPlusTree() {
@@ -709,11 +710,30 @@ namespace RA {
             dataFile.write_HeadInfo(data_end);
         }
 
+        void remake(const string &file1, const string &file2) {
+            //私有成员初始化
+            treeInfo.root = -1;
+            treeInfo.head = -1;
+            treeInfo.file_end = 0;
+            data_end = sizeof(int);
+            bptFile.clear();
+            dataFile.clear();
+            //清掉文件
+            ofstream c1(file1), c2(file2);
+            c1.close();
+            c2.close();
+            //重新打开
+            initialize(file1, file2);
+        }
 /*------external-interface-------------------------------------------------------------*/
         vector<Data> find(const Key &key) {
             vector<Data> rt;
             Data_Find(key, rt);
             return rt;
+        }
+
+        bool isEmpty() const {
+            return treeInfo.root == -1;
         }
 
         bool erase(const Key &key, const Data &data) { return Erase(key, data); }

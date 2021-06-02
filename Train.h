@@ -26,6 +26,7 @@ private:
     date SaleDate_begin{};
     date SaleDate_end{};
     int IsRelease = 0;
+    int PendingNum[101] = {0};
 
 public:
     Train() = default;
@@ -42,6 +43,7 @@ public:
     bool operator>=(const Train &rhs) const;
 
     bool operator==(const Train &rhs) const;
+
     bool operator!=(const Train &rhs) const;
 
 
@@ -75,12 +77,15 @@ public:
         trainSeat_BPT.initialize("trainSeat_BPT.dat" , "trainSeat.dat");
     }
 
+    void restart();
     vector<Train> find(const String<21> &trainID);
     vector<Train_Seat> findSeat(const String<21> &trainID);
     void addTrain(const Train &t);
     void deleteTrain(const String<21> &trainID);
     void releaseTrain(const Train &t);
     void queryTrain(const Train &t , date &d);
+    int addPendingOrderNum(const Train &t , int no);
+    int getPendingOrderNum(const String<21> &trainID , int no);
 
     void addTrainSeat(const String<21> &trainID , int num);
     int getSeatNum(const String<21> &trainID , int st , int ed , int no);

@@ -7,12 +7,13 @@ using namespace RA;
 map<String<21> , int> user_Online;
 User::User() = default;
 
-User::User(const String<21> &u, const String<31> &p, const String<20> &n, const String<31> &m, int pri) {
+User::User(const String<21> &u, const String<31> &p, const String<20> &n, const String<31> &m, int pri , int totalOrder) {
     username = u;
     password = p;
     name = n;
     mailAddress = m;
     privilege = pri;
+    TotalOrder = totalOrder;
 }
 
 bool User::operator==(const User &rhs) const {
@@ -20,7 +21,8 @@ bool User::operator==(const User &rhs) const {
            password == rhs.password &&
            name == rhs.name &&
            mailAddress == rhs.mailAddress &&
-           privilege == rhs.privilege;
+           privilege == rhs.privilege &&
+           TotalOrder == rhs.TotalOrder;
 }
 
 bool User::operator!=(const User &rhs) const {
@@ -69,11 +71,29 @@ void user_System::query_user(const User &u) {
 }
 
 void user_System::modify_user(const User &m_user , const String<31> &p, const String<20> &n, const String<31> &m, int pri) {
-    User tmp(m_user.username , p , n , m , pri);
+    User tmp(m_user.username , p , n , m , pri , m_user.TotalOrder);
     if (p == "") tmp.password = m_user.password;
     if (n == "") tmp.name = m_user.name;
     if (m == "") tmp.mailAddress = m_user.mailAddress;
     if (pri == -1) tmp.privilege = m_user.privilege;
     username_BPT.modify(m_user.username , m_user , tmp);
     cout << tmp.username << " " << tmp.name << " " << tmp.mailAddress << " " << tmp.privilege << "\n";
+}
+
+bool user_System::empty() {
+    return username_BPT.isEmpty();
+}
+
+int user_System::user_addOrder(const String<21> &username) {
+    vector<User> b_user = username_BPT.find(String<21> (username));
+    if (b_user.empty()) throw "error";
+    User u = b_user[0];
+    User tmp = u;
+    tmp.TotalOrder++;
+    username_BPT.modify(username , u , tmp);
+    return tmp.TotalOrder;
+}
+
+void user_System::restart() {
+    username_BPT.remake("users_BPT.dat" , "users.dat");
 }

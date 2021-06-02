@@ -10,9 +10,9 @@
 
 extern Train_System trainControl;
 
-Order::Order(const date &buyTime , int status, const RA::String<21> &trainId, const RA::String<40> &from, const RA::String<40> &to,
+Order::Order(int orderNo ,int pendingOrderNo , int status, const RA::String<21> &trainId, const String<21> &username, const RA::String<40> &from, const RA::String<40> &to,
              const date &leave,  const date &arrive,  int price, int no , int num)
-             : buy_Time(buyTime) , status(status), TrainID(trainId), From(from), To(to),
+             : OrderNo(orderNo) , PendingOrderNo(pendingOrderNo), status(status), TrainID(trainId), Username(username) , From(from), To(to),
                Arrive(arrive), Leave(leave), Price(price), No(no), Num(num) {}
 
 void Order::changeStatus(int s) {
@@ -21,9 +21,11 @@ void Order::changeStatus(int s) {
 
 Order &Order::operator=(const Order &o) {
     if (this == &o) return *this;
-    buy_Time = o.buy_Time;
+    OrderNo = o.OrderNo;
+    PendingOrderNo = o.PendingOrderNo;
     status = o.status;
     TrainID = o.TrainID;
+    Username = o.Username;
     From = o.From;
     To = o.To;
     Arrive = o.Arrive;
@@ -35,9 +37,11 @@ Order &Order::operator=(const Order &o) {
 }
 
 bool Order::operator==(const Order &rhs) const {
-    return buy_Time == rhs.buy_Time &&
+    return OrderNo == rhs.OrderNo &&
+           PendingOrderNo == rhs.PendingOrderNo &&
            status == rhs.status &&
            TrainID == rhs.TrainID &&
+           Username == rhs.Username &&
            From == rhs.From &&
            To == rhs.To &&
            Arrive == rhs.Arrive &&
@@ -62,7 +66,7 @@ void Order::show() const{
 }
 
 bool Order::operator<(const Order &rhs) const {
-    return buy_Time < rhs.buy_Time;
+    return OrderNo < rhs.OrderNo;
 }
 
 bool Order::operator>(const Order &rhs) const {
@@ -77,24 +81,32 @@ bool Order::operator>=(const Order &rhs) const {
     return !(*this < rhs);
 }
 
+int Order::getStatus() const {
+    return status;
+}
+
 void Order_System::addOrder(const String<21> &username , const Order &o) {
     userOrders_BPT.insert(username , o);
 }
 
 void Order_System::refundOrder(const String<21> &username, const Order &o) {
-    if (o.status == 2 || o.status == 3) throw "error";
     Order newOrder = o;
-    newOrder.changeStatus(2);
+    newOrder.changeStatus(3);
     userOrders_BPT.modify(username , o , newOrder);
-    trainControl.modifySeat(o.TrainID , o.From , o.To , o.No , o.Num);
+    if (o.status == 1){
+        trainControl.modifySeat(o.TrainID , o.From , o.To , o.No , -o.Num);
+    }
+    else {
+        delPendingOrder(o , o.No , o.PendingOrderNo);
+    }
 }
 
-void Order_System::addPendingOrder(const String<21> &username, const Order &o , int no) {
-    pendingOrder.insert(make_pair(o.TrainID , no) , make_pair(username , o));
+void Order_System::addPendingOrder(const Order &o , int no , int pendingNum) {
+    pendingOrder.insert(make_pair(o.TrainID , no) , make_pair(pendingNum , o));
 }
 
-void Order_System::delPendingOrder(const String<21> &username, const Order &o , int no) {
-    pendingOrder.erase(make_pair(o.TrainID , no) , make_pair(username , o));
+void Order_System::delPendingOrder(const Order &o , int no , int pendingNum) {
+    pendingOrder.erase(make_pair(o.TrainID , no) , make_pair(pendingNum , o));
 }
 
 vector<Order> Order_System::findOrder(const String<21> &username) {
@@ -102,7 +114,16 @@ vector<Order> Order_System::findOrder(const String<21> &username) {
     return tmp;
 }
 
-vector<pair<String<21>, Order>> Order_System::findPendingOrder(const pair<String<21>, int> &t) {
-    vector<pair<String<21>, Order>> tmp = pendingOrder.find(t);
+vector<pair<int , Order>> Order_System::findPendingOrder(const pair<String<21>, int> &t) {
+    vector<pair<int , Order>> tmp = pendingOrder.find(t);
     return tmp;
+}
+
+void Order_System::modifyOrder(const String<21> &username, const Order &old, const Order &New) {
+    userOrders_BPT.modify(username , old , New);
+}
+
+void Order_System::restart() {
+    userOrders_BPT.remake("Order_BPT.dat" , "Order.dat");
+    pendingOrder.remake("pendingOrder_BPT.dat" , "pendingOrder.dat");
 }
