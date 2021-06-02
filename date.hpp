@@ -158,22 +158,7 @@ public:
         return *this;
     }
 
-    int operator-(const date &d) const{ // 只有6 7 8 (9)月
-        if (month == d.month) return day - d.day + 1;
-        int cnt = 0;
-        if (d.month == 4 || d.month == 6 || d.month == 9 || d.month == 11) cnt += 30 - d.day + 1;
-        else if (d.month == 2) cnt += 28 - d.day + 1;
-        else cnt += 31 - d.day + 1;
-        cnt += day;
-        int m = d.month + 1;
-        while (m != month){
-            if (m == 4 || m == 6 || m == 9 || m == 11) cnt += 30;
-            else if (m == 2) cnt += 28;
-            else cnt += 31;
-            m++;
-        }
-        return cnt;
-    }
+
 
     friend int calMinute(const date &x, const date &y) {
         int x_minute = 0, y_minute = 0;
@@ -188,6 +173,26 @@ public:
         y_minute += 60*y.hour + y.minute;
 
         return x_minute-y_minute;
+    }
+
+
+    int operator-(const date &d) const{ // 只有6 7 8 (9)月
+//        if (month == d.month) return day - d.day + 1;
+//        int cnt = 0;
+//        if (d.month == 4 || d.month == 6 || d.month == 9 || d.month == 11) cnt += 30 - d.day + 1;
+//        else if (d.month == 2) cnt += 28 - d.day + 1;
+//        else cnt += 31 - d.day + 1;
+//        cnt += day;
+//        int m = d.month + 1;
+//        while (m != month){
+//            if (m == 4 || m == 6 || m == 9 || m == 11) cnt += 30;
+//            else if (m == 2) cnt += 28;
+//            else cnt += 31;
+//            m++;
+//        }
+        date p(month, day, 0, 0), q(d.month, d.day, 0, 0);
+        int cnt = calMinute(p, q)/1440 + 1;
+        return cnt;
     }
 
     friend bool cmp(const date &x, const date &y){//用于判断日期是否在范围内
