@@ -11,7 +11,7 @@
 #include "Map.hpp"
 using namespace std;
 namespace RA {
-    template<typename InternInfo, typename HeadInfo, int CACHESIZE = 500>
+    template<typename InternInfo, typename HeadInfo, int CACHESIZE>
     class DiskMonitor{
     private:
         class Binary_Node {
@@ -159,33 +159,33 @@ namespace RA {
         void read(int info_address, InternInfo &internInfo) {
             if (info_address < 0) throw bad_read_flow();
 
-//            if (cache_find(info_address)) internInfo = cache_info(info_address);
-//            else {
+            if (cache_find(info_address)) internInfo = cache_info(info_address);
+            else {
                 file.seekg(info_address);
                 file.read(reinterpret_cast<char *>(&internInfo), sizeof(internInfo));
-//                if (cache_size == CACHESIZE) {
-//                    std::pair<int, InternInfo> out = cache_pop();
-//                    if (out.first != -1) {
-//                        file.seekp(out.first);
-//                        file.write(reinterpret_cast<const char *>(&out.second), sizeof(InternInfo));
-//                    }
-//                }
-//                cache_push(info_address, internInfo);
-//            }
+                if (cache_size == CACHESIZE) {
+                    std::pair<int, InternInfo> out = cache_pop();
+                    if (out.first != -1) {
+                        file.seekp(out.first);
+                        file.write(reinterpret_cast<const char *>(&out.second), sizeof(InternInfo));
+                    }
+                }
+                cache_push(info_address, internInfo);
+            }
         }
 
         void write(int info_address, const InternInfo &internInfo) {
             if (info_address < 0) throw bad_write_flow();
-//            if (cache_map.find(info_address) != cache_map.end()) {
-//                if (cache_info(info_address) != internInfo) {
-//                    cache_info(info_address) = internInfo;
-//                    cache_map[info_address]->isModified = true;
-//                }
-//            }
-//            else {
+            if (cache_map.find(info_address) != cache_map.end()) {
+                if (cache_info(info_address) != internInfo) {
+                    cache_info(info_address) = internInfo;
+                    cache_map[info_address]->isModified = true;
+                }
+            }
+            else {
             file.seekp(info_address);
             file.write(reinterpret_cast<const char *>(&internInfo), sizeof(internInfo));
-//            }
+            }
         }
     };
 }

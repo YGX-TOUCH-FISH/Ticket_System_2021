@@ -10,29 +10,28 @@
 using namespace RA;
 
 class Order{
+    friend class Order_Control;
+    friend class Ticket_Control;
 private:
-    int OrderNo;
-    int PendingOrderNo;
-    int status{}; // 1-success 2-pending 3-refunded
+    int userOrderNo; // 记录用户购买顺序的tag
+    int PendingOrderNo; // 记录候补队列顺序的tag
+    int Status{}; // 1-success 2-pending 3-refunded
     String<21> TrainID;
     String<21> Username;
     String<40> From , To;
     date Leave{} , Arrive{};//leave为离开from的时间 ， arrive为到达to的时间
     int Price{};
-    int No; // 车次
-    int Num{};
+    int StationNo; // 车次
+    int TicketNum{};
+
 public:
     Order() = default;
-    Order(int OrderNo ,int pendingOrderNo , int status, const String<21> &trainId, const String<21> &username , const String<40> &from, const String<40> &to,
-          const date &leave, const date &arrive, int price, int no , int num);
-    void changeStatus(int s);
-
-    int getStatus() const;
+    Order(int OrderNo, int pendingOrderNo, int status, const String<21> &trainId, const String<21> &username, const String<40> &from,
+          const String<40> &to, const date &leave, const date &arrive, int price, int stationNo, int ticketNum);
 
     Order &operator=(const Order &o);
 
     bool operator==(const Order &rhs) const;
-
     bool operator!=(const Order &rhs) const;
 
     bool operator<(const Order &rhs) const;
@@ -40,27 +39,29 @@ public:
     bool operator<=(const Order &rhs) const;
     bool operator>=(const Order &rhs) const;
 
-    void show() const;
+    int getStatus() const;
+    void changeStatus(int s);
 
-    friend class Order_System;
-    friend class ticket_System;
+    void show() const;
 };
 
 
 
-class Order_System{
+class Order_Control{
 private:
-    BPlusTree<String<21> , Order> userOrders_BPT;
-    BPlusTree<pair<String<21> , int> , pair<int , Order>> pendingOrder;
+    BPlusTree<String<21> , Order, 200, 10, 300> userOrders_BPT;
+    BPlusTree<pair<String<21> , int> , pair<int , Order>, 100, 10, 200> pendingOrder;
 
 public:
-    Order_System(){
+    Order_Control(){
         userOrders_BPT.initialize("Order_BPT.dat" , "Order.dat");
         pendingOrder.initialize("pendingOrder_BPT.dat" , "pendingOrder.dat");//pendingOrder_BPT pair(TrainID , 班次数) —— pair(pendingNum , Order)
     }
+
     void restart();
     vector<Order> findOrder(const String<21> &username);
     vector<pair<int , Order>> findPendingOrder(const pair<String<21> , int> &t);
+
     void addOrder(const String<21> &username, const Order &o);
     void modifyOrder(const String<21> &username, const Order &old , const Order &New);
     void refundOrder(const String<21> &username, const Order &o);

@@ -12,6 +12,7 @@ using namespace RA;
 class User;
 
 class User{
+    friend class User_Control;
 private:
     String<21> username;
     String<31> password;
@@ -24,31 +25,32 @@ public:
     User();
     User(const String<21> &u , const String<31> &p , const String<20> &n, const String<31> &m , int pri , int totalOrder);
 
-    int getPrivilege() const;
     bool operator==(const User &rhs) const;
     bool operator!=(const User &rhs) const;
 
-    friend class user_System;
+    int getPrivilege() const;
 };
 
 
-class user_System{
+class User_Control{
 private:
-    BPlusTree<String<21> , User> username_BPT;
+    BPlusTree<String<21> , User, 200, 10, 5000> username_BPT;//username——User BPT:储存用户信息
 
 public:
-    user_System(){
+    User_Control(){
         username_BPT.initialize("users_BPT.dat" , "users.dat");
     }
     void restart();
-    vector<User> find(const String<21> &username);
     bool empty();
+    vector<User> find(const String<21> &username);
+
     void add_user(User &u);
-    int user_addOrder(const String<21> &username);
+
     void login(const String<21> &u , const String<31> &p);
     void logout(const String<21>& u);
-    void query_user(const User &u);
+    void show_inf_user(const User &u);
     void modify_user(const User &m_user ,  const String<31>& p , const String<20>& n, const String<31>& m , int pri);
+    int user_addOrderNum(const String<21> &username);
 };
 
 #endif //TRAINSTATION_USERS_H

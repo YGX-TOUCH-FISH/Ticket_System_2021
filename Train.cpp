@@ -4,7 +4,7 @@
 
 #include "Train.h"
 
-//——————————————————————————————————————————————Train类函数————————————————————————————————————————————————————————————//
+//TODO——————————————————————————————————————————Train类函数————————————————————————————————————————————————————————————//
 Train::Train(const String<21> &trainId, String<40> *stations, int stationNum, int seatNum, const int *priceSum, char type,
              const int *travelTimeSum, const int *stopoverTimeSum, const date &startDayTime, const date &saleDateBegin,
              const date &saleDateEnd , int isRelease = 0){
@@ -41,9 +41,6 @@ Train &Train::operator=(const Train &t) {
     return *this;
 }
 
-
-
-
 bool Train::operator<(const Train &rhs) const {
     return TrainID < rhs.TrainID;
 }
@@ -72,9 +69,7 @@ bool Train::operator!=(const Train &rhs) const {
     return !(rhs == *this);
 }
 
-//———————————————————————————————————————————————*****————————————————————————————————————————————————————————————————//
-
-//——————————————————————————————————————————Train_Seat类函数———————————————————————————————————————————————————————————//
+//TODO——————————————————————————————————————Train_Seat类函数———————————————————————————————————————————————————————————//
 Train_Seat::Train_Seat(int seatNum){
     for (int i = 0 ; i < 100 ; ++i){
         for (int j = 0 ; j <= 100 ; ++j) seat[i][j] = seatNum;
@@ -84,8 +79,6 @@ Train_Seat::Train_Seat(int seatNum){
 bool Train_Seat::operator<(const Train_Seat &t){
     return seat[1][1] < t.seat[1][1];
 }
-
-
 
 Train_Seat &Train_Seat::operator=(const Train_Seat &t) {
     if (this == &t) return *this;
@@ -107,20 +100,30 @@ bool Train_Seat::operator==(const Train_Seat &rhs) const {
 bool Train_Seat::operator!=(const Train_Seat &rhs) const {
     return !(rhs == *this);
 }
-//———————————————————————————————————————————————*****————————————————————————————————————————————————————————————————//
 
-//————————————————————————————————————————Train_System类接口———————————————————————————————————————————————————————————//
-void Train_System::addTrain(const Train &t) {
+//TODO————————————————————————————————————Train_System类接口———————————————————————————————————————————————————————————//
+void Train_Control::restart() {
+    trainID_BPT.remake("train_BPT.dat" , "Train.dat");
+    trainSeat_BPT.remake("trainSeat_BPT.dat" , "trainSeat.dat");
+}
+
+//—————————————————about Train———————————————————————//
+vector<Train> Train_Control::findTrain(const String<21> &trainID) {
+    vector<Train> tmp = trainID_BPT.find(trainID);
+    return tmp;
+}
+
+void Train_Control::addTrain(const Train &t) {
     vector<Train> exist_train;
     exist_train = trainID_BPT.find(t.TrainID);
     if (!exist_train.empty()) throw "have existed";
     trainID_BPT.insert(t.TrainID , t);
 }
 
-void Train_System::deleteTrain(const String<21> &trainID) {
+void Train_Control::deleteTrain(const String<21> &trainID) {
     vector<Train> exist_train;
     exist_train = trainID_BPT.find(trainID);
-    if (exist_train.empty()) throw "no find";
+    if (exist_train.empty()) throw "no findTrain";
     Train t = exist_train[0];
     if (t.IsRelease == 1) throw "cannot delete";
     trainID_BPT.erase(trainID , t);
@@ -128,14 +131,14 @@ void Train_System::deleteTrain(const String<21> &trainID) {
     //to do
 }
 
-void Train_System::releaseTrain(const Train &t) {
+void Train_Control::releaseTrain(const Train &t) {
     if (t.IsRelease == 1) throw "have released";
     Train re_t = t;
     re_t.IsRelease = 1;
     trainID_BPT.modify(t.TrainID , t , re_t);
 }
 
-void Train_System::queryTrain(const Train &t, date &d) {
+void Train_Control::queryTrain(const Train &t, date &d) {
     if (cmp(t.SaleDate_begin , d) && cmp(d , t.SaleDate_end)){
         vector<Train_Seat> tmp = trainSeat_BPT.find(t.TrainID);
         Train_Seat t_seat = tmp[0];
@@ -159,8 +162,20 @@ void Train_System::queryTrain(const Train &t, date &d) {
     else throw "error";
 }
 
+int Train_Control::addPendingOrderNum(const Train &t , int no) {
+    Train tmp = t;
+    tmp.PendingNum[no]++;
+    trainID_BPT.modify(t.TrainID , t , tmp);
+    return tmp.PendingNum[no];
+}
 
-void Train_System::addTrainSeat(const String<21> &trainID , int num) {
+//—————————————————about TrainSeat———————————————————//
+vector<Train_Seat> Train_Control::findSeat(const String<21> &trainID) {
+    vector<Train_Seat> tmp = trainSeat_BPT.find(trainID);
+    return tmp;
+}
+
+void Train_Control::addTrainSeat(const String<21> &trainID , int num) {
     vector<Train_Seat> exist_train;
     exist_train = trainSeat_BPT.find(trainID);
     if (!exist_train.empty()) throw "have existed";
@@ -168,7 +183,7 @@ void Train_System::addTrainSeat(const String<21> &trainID , int num) {
     trainSeat_BPT.insert(trainID , a);
 }
 
-int Train_System::getSeatNum(const String<21> &trainID , int st , int ed , int no) {
+int Train_Control::getSeatNum(const String<21> &trainID , int st , int ed , int no) {
     vector<Train_Seat> tmp = trainSeat_BPT.find(trainID);
     Train_Seat t_train = tmp[0];
     int ans = 1e9 + 7;
@@ -178,7 +193,7 @@ int Train_System::getSeatNum(const String<21> &trainID , int st , int ed , int n
     return ans;
 }
 
-int Train_System::getSeatNum(const String<21> &trainID, const String<40> &st, const String<40> &ed, int no) {
+int Train_Control::getSeatNum(const String<21> &trainID, const String<40> &st, const String<40> &ed, int no) {
     vector<Train> tmp = trainID_BPT.find(trainID);
     Train t = tmp[0];
     int s = 0 , e = 0;
@@ -195,8 +210,7 @@ int Train_System::getSeatNum(const String<21> &trainID, const String<40> &st, co
     return ans;
 }
 
-
-void Train_System::modifySeat(const String<21> &trainID, int st, int ed, int no, int changeNum) {
+void Train_Control::modifySeat(const String<21> &trainID, int st, int ed, int no, int changeNum) {
     vector<Train_Seat> tmp = trainSeat_BPT.find(trainID);
     Train_Seat t_train = tmp[0];
     for (int i = st ; i < ed ; ++i){
@@ -205,7 +219,7 @@ void Train_System::modifySeat(const String<21> &trainID, int st, int ed, int no,
     trainSeat_BPT.modify(trainID , tmp[0] , t_train);
 }
 
-void Train_System::modifySeat(const String<21> &trainID ,const String<40> &st , const String<40> &ed , int no , int changeNum) {
+void Train_Control::modifySeat(const String<21> &trainID , const String<40> &st , const String<40> &ed , int no , int changeNum) {
     vector<Train> tmp = trainID_BPT.find(trainID);
     Train t = tmp[0];
     int s = 0 , e = 0;
@@ -220,32 +234,4 @@ void Train_System::modifySeat(const String<21> &trainID ,const String<40> &st , 
     }
     trainSeat_BPT.modify(trainID , tmp2[0] , t_train);
 }
-
-vector<Train> Train_System::find(const String<21> &trainID) {
-    vector<Train> tmp = trainID_BPT.find(trainID);
-    return tmp;
-}
-
-vector<Train_Seat> Train_System::findSeat(const String<21> &trainID) {
-    vector<Train_Seat> tmp = trainSeat_BPT.find(trainID);
-    return tmp;
-}
-
-int Train_System::addPendingOrderNum(const Train &t , int no) {
-    Train tmp = t;
-    tmp.PendingNum[no]++;
-    trainID_BPT.modify(t.TrainID , t , tmp);
-    return tmp.PendingNum[no];
-}
-
-int Train_System::getPendingOrderNum(const String<21> &trainID, int no) {
-    vector<Train> tmp = trainID_BPT.find(trainID);
-    return tmp[0].PendingNum[no];
-}
-
-void Train_System::restart() {
-    trainID_BPT.remake("train_BPT.dat" , "Train.dat");
-    trainSeat_BPT.remake("trainSeat_BPT.dat" , "trainSeat.dat");
-}
-
 //———————————————————————————————————————————————*****————————————————————————————————————————————————————————————————//

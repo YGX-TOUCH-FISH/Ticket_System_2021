@@ -34,7 +34,7 @@ namespace RA {
     }
 }
 namespace RA {
-    template<typename Key, typename Data, int MAX = 100, int CACHESIZE = 500>
+    template<typename Key, typename Data, int MAX = 200, int TREECACHE = 50, int DATACACHE = 500>
     class BPlusTree {
         typedef std::pair<Key, Data> value_type;
 //        static const int MAX = 200;
@@ -119,9 +119,9 @@ namespace RA {
         /*  树节点文件的末端地址       */
         int data_end = sizeof(int);
         /*  数据记录文件的末端地址     */
-        DiskMonitor<node, tree_info, CACHESIZE> bptFile;
+        DiskMonitor<node, tree_info, TREECACHE> bptFile;
         /*  关联树节点记录文件        */
-        DiskMonitor<value_type, int, CACHESIZE> dataFile;
+        DiskMonitor<value_type, int, DATACACHE> dataFile;
         /*  关联原始数据记录文件       */
     private:
 

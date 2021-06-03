@@ -1,50 +1,50 @@
 //
 // Created by lenovo on 2021/5/12.
 //
-
 #ifndef TRAINSTATION_DATE_HPP
 #define TRAINSTATION_DATE_HPP
+
 #include <iostream>
+
 class date{
 public:
-    int month;
-    int day;
-    int hour;
-    int minute;
+    int Month;
+    int Day;
+    int Hour;
+    int Minute;
 
     date() = default;
 
-    date(int M , int d , int h , int m) : month(M) , day(d) , hour(h) , minute(m) {}
+    date(int month , int day , int hour , int minute) : Month(month) , Day(day) , Hour(hour) , Minute(minute) {}
 
     date(const date &d){
-        month = d.month;
-        day = d.day;
-        hour = d.hour;
-        minute = d.minute;
+        Month = d.Month;
+        Day = d.Day;
+        Hour = d.Hour;
+        Minute = d.Minute;
     }
 
-    void reset(int m , int d , int h , int min) {
-        month = m;
-        day = d;
-        hour = h;
-        minute = min;
+    void reset(int month , int day , int hour , int minute) {
+        Month = month;
+        Day = day;
+        Hour = hour;
+        Minute = minute;
     }
-
 
     date &operator=(const date &d){
         if (this == &d) return *this;
-        month = d.month;
-        day = d.day;
-        hour = d.hour;
-        minute = d.minute;
+        Month = d.Month;
+        Day = d.Day;
+        Hour = d.Hour;
+        Minute = d.Minute;
         return *this;
     }
 
     bool operator==(const date &rhs) const {
-        return month == rhs.month &&
-               day == rhs.day &&
-               hour == rhs.hour &&
-               minute == rhs.minute;
+        return Month == rhs.Month &&
+               Day == rhs.Day &&
+               Hour == rhs.Hour &&
+               Minute == rhs.Minute;
     }
 
     bool operator!=(const date &rhs) const {
@@ -52,19 +52,19 @@ public:
     }
 
     bool operator<(const date &rhs) const {
-        if (month < rhs.month)
+        if (Month < rhs.Month)
             return true;
-        if (rhs.month < month)
+        if (rhs.Month < Month)
             return false;
-        if (day < rhs.day)
+        if (Day < rhs.Day)
             return true;
-        if (rhs.day < day)
+        if (rhs.Day < Day)
             return false;
-        if (hour < rhs.hour)
+        if (Hour < rhs.Hour)
             return true;
-        if (rhs.hour < hour)
+        if (rhs.Hour < Hour)
             return false;
-        return minute < rhs.minute;
+        return Minute < rhs.Minute;
     }
 
     bool operator>(const date &rhs) const {
@@ -80,52 +80,13 @@ public:
     }
 
     date operator+(const date &d) const{
-        int M = month , D = day , h = hour , min = minute;
-        min += d.minute;
-        h += min/60 + d.hour;
-        min %= 60;
-        D += h/24 + d.day;
-        h %= 24;
-        while (true){
-            if (M == 2){
-                if (D <= 28) break;
-                else {
-                    D -= 28;
-                    M++;
-                }
-            }
-            else if (M == 4 || M == 6 || M == 9 || M == 11){
-                if (D <= 30) break;
-                else {
-                    D -= 30;
-                    M++;
-                }
-            }
-            else {
-                if (D <= 31) break;
-                else {
-                    D -= 31;
-                    M++;
-                }
-            }
-        }
-        M += d.month;
-        return date(M , D , h , min);
-    }
-
-    date &operator+=(const date &d){
-        minute += d.minute;
-        while (minute >= 60){
-            hour++;
-            minute -= 60;
-        }
-        hour += d.hour;
-        while (hour >= 24){
-            day++;
-            hour -= 24;
-        }
-        day += d.day;
-        while (true){
+        int month = Month , day = Day , hour = Hour , minute = Minute;
+        minute += d.Minute;
+        hour += minute / 60 + d.Hour;
+        minute %= 60;
+        day += hour / 24 + d.Day;
+        hour %= 24;
+        while (true){//处理月份
             if (month == 2){
                 if (day <= 28) break;
                 else {
@@ -148,64 +109,94 @@ public:
                 }
             }
         }
-        month += d.month;
+        month += d.Month;
+        return date(month , day , hour , minute);
+    }
+
+    date &operator+=(const date &d){
+        Minute += d.Minute;
+        Hour += Minute / 60 + d.Hour;
+        Minute %= 60;
+        Day += Hour / 24 + d.Day;
+        Hour %= 24;
+        while (true){//处理月份
+            if (Month == 2){
+                if (Day <= 28) break;
+                else {
+                    Day -= 28;
+                    Month++;
+                }
+            }
+            else if (Month == 4 || Month == 6 || Month == 9 || Month == 11){
+                if (Day <= 30) break;
+                else {
+                    Day -= 30;
+                    Month++;
+                }
+            }
+            else {
+                if (Day <= 31) break;
+                else {
+                    Day -= 31;
+                    Month++;
+                }
+            }
+        }
+        Month += d.Month;
         return *this;
     }
 
-
-
-    friend int calMinute(const date &x, const date &y) {
-        int x_minute = 0, y_minute = 0;
-        int a[12] = {0, 31, 59, 90, 120, 151,181 , 212, 243, 273, 304, 334};
-        x_minute += 1440*a[x.month-1];
-        y_minute += 1440*a[y.month-1];
-
-        x_minute += 1440*(x.day-1);
-        y_minute += 1440*(y.day-1);
-
-        x_minute += 60*x.hour + x.minute;
-        y_minute += 60*y.hour + y.minute;
-
-        return x_minute-y_minute;
-    }
-
-
-    int operator-(const date &d) const{ // 只有6 7 8 (9)月
-//        if (month == d.month) return day - d.day + 1;
-//        int cnt = 0;
-//        if (d.month == 4 || d.month == 6 || d.month == 9 || d.month == 11) cnt += 30 - d.day + 1;
-//        else if (d.month == 2) cnt += 28 - d.day + 1;
-//        else cnt += 31 - d.day + 1;
-//        cnt += day;
-//        int m = d.month + 1;
-//        while (m != month){
-//            if (m == 4 || m == 6 || m == 9 || m == 11) cnt += 30;
-//            else if (m == 2) cnt += 28;
-//            else cnt += 31;
-//            m++;
-//        }
-        date p(month, day, 0, 0), q(d.month, d.day, 0, 0);
-        int cnt = (calMinute(p, q))/1440 + 1;
+    //TODO 计算两日期之间的日期差:用于计算班数
+    int operator-(const date &d) const{
+        if (Month == d.Month) return Day - d.Day + 1;
+        int cnt = 0;
+        if (d.Month == 4 || d.Month == 6 || d.Month == 9 || d.Month == 11) cnt += 30 - d.Day + 1;
+        else if (d.Month == 2) cnt += 28 - d.Day + 1;
+        else cnt += 31 - d.Day + 1;
+        cnt += Day;
+        int m = d.Month + 1;
+        while (m != Month){
+            if (m == 4 || m == 6 || m == 9 || m == 11) cnt += 30;
+            else if (m == 2) cnt += 28;
+            else cnt += 31;
+            m++;
+        }
         return cnt;
     }
+    //TODO 计算两日期之间的minutes差
+    friend int calMinute(const date &x, const date &y) {
+        int x_minute = 0, y_minute = 0;
+        int a[12] = {0, 31, 59, 90, 120, 151,181 , 212, 243, 273, 304, 334};//月份天数前缀和
 
-    friend bool cmp(const date &x, const date &y){//用于判断日期是否在范围内
-        if (x.month == y.month) return x.day <= y.day;
-        return x.month < y.month;
+        x_minute += 1440 * a[x.Month - 1];
+        y_minute += 1440 * a[y.Month - 1];
+
+        x_minute += 1440 * (x.Day - 1);
+        y_minute += 1440 * (y.Day - 1);
+
+        x_minute += 60 * x.Hour + x.Minute;
+        y_minute += 60 * y.Hour + y.Minute;
+
+        return x_minute - y_minute;
+    }
+    //TODO 用于判断日期是否在范围内
+    friend bool cmp(const date &x, const date &y){
+        if (x.Month == y.Month) return x.Day <= y.Day;
+        return x.Month < y.Month;
     }
 
     void show() const{
-        if (month <= 9) std::cout << 0 << month;
-        else std::cout << month;
+        if (Month <= 9) std::cout << 0 << Month;
+        else std::cout << Month;
         std::cout << "-";
-        if (day <= 9) std::cout << 0 << day;
-        else std::cout << day;
+        if (Day <= 9) std::cout << 0 << Day;
+        else std::cout << Day;
         std::cout << " ";
-        if (hour <= 9) std::cout << 0 << hour;
-        else std::cout << hour;
+        if (Hour <= 9) std::cout << 0 << Hour;
+        else std::cout << Hour;
         std::cout << ":";
-        if (minute <= 9) std::cout << 0 << minute;
-        else std::cout << minute;
+        if (Minute <= 9) std::cout << 0 << Minute;
+        else std::cout << Minute;
     }
 };
 

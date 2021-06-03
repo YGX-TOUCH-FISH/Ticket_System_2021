@@ -3,10 +3,10 @@
 using namespace std;
 
 int main() {
-    std::string command;
+//    freopen("data/basic_6/1.in" , "r" , stdin);
+//    freopen("data/basic_6/1ans.txt" , "w" , stdout);
 
-//    freopen("data/basic_6/10.in" , "r" , stdin);
-//    freopen("data/basic_6/10ans.txt" , "w" , stdout);
+    std::string command;
     Init();
     while(getline(cin , command)){
         try{

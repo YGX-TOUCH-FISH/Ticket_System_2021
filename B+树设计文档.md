@@ -54,7 +54,7 @@ RA::BPlusTree<key_type, data_type> BPT(file1, file2);//正确
 支持对某一key值的寻找，返回一个data_type类的vector，存有所有键值为key的data.
 
 ```c++
-vector<data_type> find(const key_type &key);
+vector<data_type> findTrain(const key_type &key);
 ```
 
 > 不存在时返回空vector.

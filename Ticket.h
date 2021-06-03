@@ -13,15 +13,17 @@
 #include <algorithm>
 using namespace RA;
 
-extern Train_System trainControl;
-extern Order_System orderControl;
+extern Train_Control trainSystem;
+extern Order_Control orderSystem;
 
 class Ticket{
+    friend class Ticket_Control;
+
 public:
     String<21> TrainID;
     int StationNo;
     date StartDayTime{};
-    date StartDay{} , EndDay{};
+    date SaleDate_begin{} , SaleDate_end{};
     int ArrivalTime{} , LeaveTime{};
     int Price{};
 
@@ -38,31 +40,28 @@ public:
     bool operator>(const Ticket &t) const;
     bool operator<=(const Ticket &rhs) const;
     bool operator>=(const Ticket &rhs) const;
-
-    friend class ticket_System;
 };
 
-
-class ticket_System{
+class Ticket_Control{
+    friend class Train;
 private:
-    BPlusTree<String<40> , Ticket> ticket_BPT;// pair(车站，发车日期) —— 车票
+    BPlusTree<String<40> , Ticket, 500, 20, 100> ticket_BPT;// pair(车站，发车日期) —— 车票
 
     void addTicket(const String<40> &station , const Ticket &t);
     void delTicket(const String<40> &station , const Ticket &t);
-
 public:
-    ticket_System(){
+    Ticket_Control(){
         ticket_BPT.initialize("tickets_BPT.dat" , "Ticket.dat");
     };
+
     void restart();
     vector<Ticket> find(const String<40> &trainID);
+
     void addTicket(const Train &t);
     void buyTicket(const String<21> &username , const Train &t , const String<40> &st , const String<40> &ed , const date &d , int Stationnum , int isQue , int OrderNo);
-    vector<pair<Ticket , Ticket>> queryTicket(const String<40> &st , const String<40> &ed , const date &d);
+    vector<pair<Ticket , Ticket>> queryTransTicket(const String<40> &st , const String<40> &ed , const date &d);
     vector<pair<pair<int , int> , pair<Ticket , Ticket>>> queryTransfer(const Train &t , const String<40> &st , const String<40> &ed , const date &d , int type);
     void queryTransfer(const String<40> &st , const String<40> &ed , const date &d , int type);
     void que_BuyTicket(const String<21> &username , const Order &refund_o);
-
-    friend class Train;
 };
 #endif //TRAINSTATION_TICKET_H
