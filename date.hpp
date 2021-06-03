@@ -148,19 +148,8 @@ public:
 
     //TODO 计算两日期之间的日期差:用于计算班数
     int operator-(const date &d) const{
-        if (Month == d.Month) return Day - d.Day + 1;
-        int cnt = 0;
-        if (d.Month == 4 || d.Month == 6 || d.Month == 9 || d.Month == 11) cnt += 30 - d.Day + 1;
-        else if (d.Month == 2) cnt += 28 - d.Day + 1;
-        else cnt += 31 - d.Day + 1;
-        cnt += Day;
-        int m = d.Month + 1;
-        while (m != Month){
-            if (m == 4 || m == 6 || m == 9 || m == 11) cnt += 30;
-            else if (m == 2) cnt += 28;
-            else cnt += 31;
-            m++;
-        }
+        date p(Month, Day, 0, 0), q(d.Month, d.Day, 0, 0);
+        int cnt = (calMinute(p, q))/1440 + 1;
         return cnt;
     }
     //TODO 计算两日期之间的minutes差
