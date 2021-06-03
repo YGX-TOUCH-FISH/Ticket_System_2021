@@ -45,7 +45,7 @@ public:
 class Ticket_Control{
     friend class Train;
 private:
-    BPlusTree<String<40> , Ticket, 500, 20, 100> ticket_BPT;// pair(车站，发车日期) —— 车票
+    BPlusTree<String<40> , Ticket> ticket_BPT;// pair(车站，发车日期) —— 车票
 
     void addTicket(const String<40> &station , const Ticket &t);
     void delTicket(const String<40> &station , const Ticket &t);

@@ -49,15 +49,14 @@ public:
 
 class Order_Control{
 private:
-    BPlusTree<String<21> , Order, 200, 10, 300> userOrders_BPT;
-    BPlusTree<pair<String<21> , int> , pair<int , Order>, 100, 10, 200> pendingOrder;
+    BPlusTree<String<21> , Order, 200, 200, 5000> userOrders_BPT;
+    BPlusTree<pair<String<21> , int> , pair<int , Order>, 200, 200, 5000> pendingOrder;
 
 public:
     Order_Control(){
         userOrders_BPT.initialize("Order_BPT.dat" , "Order.dat");
         pendingOrder.initialize("pendingOrder_BPT.dat" , "pendingOrder.dat");//pendingOrder_BPT pair(TrainID , 班次数) —— pair(pendingNum , Order)
     }
-
     void restart();
     vector<Order> findOrder(const String<21> &username);
     vector<pair<int , Order>> findPendingOrder(const pair<String<21> , int> &t);

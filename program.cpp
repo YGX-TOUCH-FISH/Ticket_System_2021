@@ -120,9 +120,6 @@ void add_user(std::string &cmd){
     }
     else {
         if (user_Online.find(String<21> (cur_user)) == user_Online.end()) throw "error (no login)";
-//        vector<User> container;
-//        container = userSystem.find(String<21> (cur_user));
-//        User cur = container[0];
         int cur_pri = user_Online[String<21> (cur_user)];
         if (cur_pri <= pri) throw "error (pri)";
         User u(String<21>(username) , String<31>(password) , String<20>(name) , String<31>(mailAddress) , pri , 0);
@@ -166,11 +163,8 @@ void query_profile(std::string &cmd){
         else throw "error";
     }
     if (user_Online.find(String<21> (cur_user)) == user_Online.end()) throw "error";
-    vector<User> container;
-//    container = userSystem.find(String<21> (cur_user));
-//    if (container.empty()) throw "error";
-//    User cur = container[0];
     int cur_pri = user_Online[String<21> (cur_user)];
+    vector<User> container;
     container.clear();
     container = userSystem.find(String<21> (username));
     if (container.empty()) throw "error";
@@ -200,11 +194,8 @@ void modify_profile(std::string &cmd){
         else throw "error";
     }
     if (user_Online.find(String<21> (cur_user)) == user_Online.end()) throw "error";
-    vector<User> container;
-//    container = userSystem.find(String<21> (cur_user));
-//    if (container.empty()) throw "error";
-//    User cur = container[0];
     int cur_pri = user_Online[String<21> (cur_user)];
+    vector<User> container;
     container.clear();
     container = userSystem.find(String<21> (username));
     if (container.empty()) throw "error";
@@ -312,7 +303,8 @@ void add_train(std::string &cmd){
 
     Train t(String<21> (trainID) , Stations , stationNum , seatNum , Prices , char (type[0]) , TravelTimes , StopoverTimes , StartTime , saleStart , saleEnd , 0);
     trainSystem.addTrain(t);
-    trainSystem.addTrainSeat(String<21> (trainID) , seatNum);
+    int dayCount = saleEnd - saleStart;
+    trainSystem.addTrainSeat(String<21> (trainID) , seatNum , dayCount);
     std::cout << 0 << "\n";
 }
 
