@@ -34,7 +34,7 @@ namespace RA {
     }
 }
 namespace RA {
-    template<typename Key, typename Data, int MAX = 800, int CACHESIZE = 500>
+    template<typename Key, typename Data, int MAX = 200, int CACHESIZE = 50>
     class BPlusTree {
         typedef std::pair<Key, Data> value_type;
 //        static const int MAX = 200;
