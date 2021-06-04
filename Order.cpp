@@ -89,13 +89,13 @@ int Order::getStatus() const {
 
 //TODO—————————————————————————————————————Order_Control类函数—————————————————————————————————————————————————————————//
 void Order_Control::addOrder(const String<21> &username , const Order &o) {
-    userOrders_BPT.insert(username , o);
+    userOrders_BPT.insert(username.hash_value , o);
 }
 
 void Order_Control::refundOrder(const String<21> &username, const Order &o) {
     Order newOrder = o;
     newOrder.changeStatus(3);
-    userOrders_BPT.modify(username , o , newOrder);
+    userOrders_BPT.modify(username.hash_value , o , newOrder);
     if (o.Status == 1){
         trainSystem.modifySeat(o.TrainID , o.From , o.To , o.StationNo , -o.TicketNum);
     }
@@ -113,7 +113,7 @@ void Order_Control::delPendingOrder(const Order &o , int no , int pendingNum) {
 }
 
 vector<Order> Order_Control::findOrder(const String<21> &username) {
-    vector<Order> tmp = userOrders_BPT.find(username);
+    vector<Order> tmp = userOrders_BPT.find(username.hash_value);
     return tmp;
 }
 
@@ -123,7 +123,7 @@ vector<pair<int , Order>> Order_Control::findPendingOrder(const pair<String<21>,
 }
 
 void Order_Control::modifyOrder(const String<21> &username, const Order &old, const Order &New) {
-    userOrders_BPT.modify(username , old , New);
+    userOrders_BPT.modify(username.hash_value , old , New);
 }
 
 void Order_Control::restart() {

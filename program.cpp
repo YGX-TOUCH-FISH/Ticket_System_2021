@@ -523,11 +523,8 @@ void buy_ticket(const std::string &cmd){
     }
     if (user_Online.find(String<21> (username)) == user_Online.end()) throw "error (no login)";
     if (num <= 0) throw "error";
-    vector<Train> exist_train;
-    exist_train = trainSystem.findTrain(String<21>(trainID));
-    if (exist_train.empty()) throw "error";
     int no = userSystem.user_addOrderNum(String<21> (username));
-    ticketSystem.buyTicket(String<21> (username) , exist_train[0] , String<40> (st) , String<40> (ed) , time , num , isQue , no);
+    ticketSystem.buyTicket(String<21> (username) , String<21> (trainID) , String<40> (st) , String<40> (ed) , time , num , isQue , no);
 }
 
 void query_order(const std::string &cmd){
@@ -535,8 +532,6 @@ void query_order(const std::string &cmd){
     tmp = Split(cmd.substr(12) , ' ');
     String<21> username(tmp[1]);
     if (user_Online.find(username) == user_Online.end()) throw "error";
-//    vector<User> exist_user = userSystem.findTrain(username);
-//    if (exist_user.empty()) throw "error";
     vector<Order> exist_Order = orderSystem.findOrder(username);
     if (exist_Order.empty()) cout << 0 << "\n";
     else {

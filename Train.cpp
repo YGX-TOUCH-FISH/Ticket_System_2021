@@ -101,24 +101,24 @@ void Train_Control::restart() {
 
 //TODO—————————————————about Train———————————————————————//
 vector<Train> Train_Control::findTrain(const String<21> &trainID) {
-    vector<Train> tmp = trainID_BPT.find(trainID);
+    vector<Train> tmp = trainID_BPT.find(trainID.hash_value);
     return tmp;
 }
 
 void Train_Control::addTrain(const Train &t) {
     vector<Train> exist_train;
-    exist_train = trainID_BPT.find(t.TrainID);
+    exist_train = trainID_BPT.find(t.TrainID.hash_value);
     if (!exist_train.empty()) throw "have existed";
-    trainID_BPT.insert(t.TrainID , t);
+    trainID_BPT.insert(t.TrainID.hash_value , t);
 }
 
 void Train_Control::deleteTrain(const String<21> &trainID) {
     vector<Train> exist_train;
-    exist_train = trainID_BPT.find(trainID);
+    exist_train = trainID_BPT.find(trainID.hash_value);
     if (exist_train.empty()) throw "no findTrain";
     Train t = exist_train[0];
     if (t.IsRelease == 1) throw "cannot delete";
-    trainID_BPT.erase(trainID , t);
+    trainID_BPT.erase(trainID.hash_value , t);
     int dayCount = t.SaleDate_end - t.SaleDate_begin;
     for (int i = 1 ; i <= dayCount ; ++i){
         trainSeat_BPT.erase(make_pair(trainID , i) , Train_Seat (t.SeatNum));
@@ -130,7 +130,7 @@ void Train_Control::releaseTrain(const Train &t) {
     if (t.IsRelease == 1) throw "have released";
     Train re_t = t;
     re_t.IsRelease = 1;
-    trainID_BPT.modify(t.TrainID , t , re_t);
+    trainID_BPT.modify(t.TrainID.hash_value , t , re_t);
 }
 
 void Train_Control::queryTrain(const Train &t, date &d) {
@@ -160,7 +160,7 @@ void Train_Control::queryTrain(const Train &t, date &d) {
 int Train_Control::addPendingOrderNum(const Train &t , int no) {
     Train tmp = t;
     tmp.PendingNum++;
-    trainID_BPT.modify(t.TrainID , t , tmp);
+    trainID_BPT.modify(t.TrainID.hash_value , t , tmp);
     return tmp.PendingNum;
 }
 
@@ -186,7 +186,7 @@ int Train_Control::getSeatNum(const String<21> &trainID , int st , int ed , int 
 }
 
 int Train_Control::getSeatNum(const String<21> &trainID, const String<40> &st, const String<40> &ed, int no) {
-    vector<Train> tmp = trainID_BPT.find(trainID);
+    vector<Train> tmp = trainID_BPT.find(trainID.hash_value);
     Train t = tmp[0];
     int s = 0 , e = 0;
     for (int i = 1 ; i <= t.StationNum ; ++i){
@@ -212,7 +212,7 @@ void Train_Control::modifySeat(const String<21> &trainID, int st, int ed, int no
 }
 
 void Train_Control::modifySeat(const String<21> &trainID , const String<40> &st , const String<40> &ed , int no , int changeNum) {
-    vector<Train> tmp = trainID_BPT.find(trainID);
+    vector<Train> tmp = trainID_BPT.find(trainID.hash_value);
     Train t = tmp[0];
     int s = 0 , e = 0;
     for (int i = 1 ; i <= t.StationNum ; ++i){

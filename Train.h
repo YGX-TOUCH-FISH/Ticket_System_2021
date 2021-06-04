@@ -64,8 +64,8 @@ public:
 
 class Train_Control{
 private:
-    BPlusTree<String<21> , Train, 200, 10, 10> trainID_BPT;
-    BPlusTree<pair<String<21> , int> , Train_Seat, 200, 10, 10>  trainSeat_BPT;// pair<trainID , 车次> —— seat
+    BPlusTree<int , Train> trainID_BPT;
+    BPlusTree<pair<String<21> , int> , Train_Seat>  trainSeat_BPT;// pair<trainID , 车次> —— seat
 
 public:
     Train_Control(){

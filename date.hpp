@@ -149,7 +149,7 @@ public:
     //TODO 计算两日期之间的日期差:用于计算班数
     int operator-(const date &d) const{
         date p(Month, Day, 0, 0), q(d.Month, d.Day, 0, 0);
-        int cnt = (calMinute(p, q))/1440 + 1;
+        int cnt = (calMinute(p, q)) / 1440 + 1;
         return cnt;
     }
     //TODO 计算两日期之间的minutes差

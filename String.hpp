@@ -12,6 +12,8 @@ namespace RA {
     class String {
         char str[N+1]{};
     public:
+        int hash_value = 0;
+    public:
         String() { str[0] = '\0'; }
         explicit String(const char *ec) {
             if (ec) {
@@ -22,22 +24,41 @@ namespace RA {
             else {
                 str[0] = '\0';
             }
+            size_t len = strlen(ec);
+            hash_value = 0;
+            for (int i = 0; i < len; ++i) {
+                hash_value = (1ll * hash_value * 13331 + str[i]) % 998244353 ;
+            }
+            hash_value = (hash_value + 998244353) % 998244353 ;
         }
         explicit String(const std::string &s){
             int i = 0;
             for ( ; i < N && s[i] != '\0' ; ++i) str[i] = s[i];
             str[i] = '\0';
+            size_t len = s.length();
+            hash_value = 0;
+            for (i = 0; i < len; ++i) {
+                hash_value = (1ll * hash_value * 13331 + str[i]) % 998244353 ;
+            }
+            hash_value = (hash_value + 998244353) % 998244353 ;
         }
         String (const String &ec) {
             int i = 0;
             for ( ; i < N && ec.str[i] != '\0' ; ++i) str[i] = ec.str[i];
             str[i] = '\0';
+            size_t len = strlen(ec.str);
+            hash_value = 0;
+            for (i = 0; i < len; ++i) {
+                hash_value = (1ll * hash_value * 13331 + str[i]) % 998244353 ;
+            }
+            hash_value = (hash_value + 998244353) % 998244353 ;
         }
         String &operator=(const String &ec) {
             if (this == &ec) return *this;
             int i = 0;
             for ( ; i < N && ec.str[i] != '\0' ; ++i) str[i] = ec.str[i];
             str[i] = '\0';
+            hash_value = ec.hash_value;
             return *this;
         }
         String &operator=(const char *ec) {
@@ -45,17 +66,23 @@ namespace RA {
             int i = 0;
             for ( ; i < N && ec[i] != '\0' ; ++i) str[i] = ec[i];
             str[i] = '\0';
+            size_t len = strlen(ec);
+            hash_value = 0;
+            for (i = 0; i < len; ++i) {
+                hash_value = (1ll * hash_value * 13331 + str[i]) % 998244353 ;
+            }
+            hash_value = (hash_value + 998244353) % 998244353 ;
             return *this;
         }
         /*  compare operator                          */
         bool operator==(const String &ec) const {
-            size_t l1 = strlen(str);
-            size_t l2 = strlen(ec.str);
-            if (l1 != l2) return false;
-            for (int i = 0 ; i < l1 ; ++i)
-                if (str[i] != ec.str[i])
-                    return false;
-            return true;
+//            size_t l1 = strlen(str);
+//            size_t l2 = strlen(ec.str);
+//            if (l1 != l2) return false;
+//            for (int i = 0 ; i < l1 ; ++i)
+//                if (str[i] != ec.str[i])
+//                    return false;
+            return hash_value == ec.hash_value;
         }
         bool operator <(const String &ec) const{
             if (!ec.str) throw invalid_visit();

@@ -46,24 +46,24 @@ bool User_Control::empty() {
 }
 
 vector<User> User_Control::find(const String<21> &username) {
-    vector<User> tmp = username_BPT.find(username);
+    vector<User> tmp = username_BPT.find(username.hash_value);
     return tmp;
 }
 
 void User_Control::add_user(User &u) {
     vector<User> user_exist;
-    user_exist = username_BPT.find(u.username);
+    user_exist = username_BPT.find(u.username.hash_value);
     if (!user_exist.empty()) {
         throw "error (existed)";
     }
-    username_BPT.insert(u.username , u);
+    username_BPT.insert(u.username.hash_value , u);
 }
 
 void User_Control::login(const String<21> &u , const String<31> &p){
     auto it = user_Online.find(u);
     if (it != user_Online.end()) throw "error (have login)";
     vector<User> user_exist;
-    user_exist = username_BPT.find(u);
+    user_exist = username_BPT.find(u.hash_value);
     if (user_exist.empty()) {
         throw "no finding";
     }
@@ -93,17 +93,17 @@ void User_Control::modify_user(const User &m_user , const String<31> &p, const S
             user_Online[m_user.username] = pri;
         }
     }
-    username_BPT.modify(m_user.username , m_user , tmp);
+    username_BPT.modify(m_user.username.hash_value , m_user , tmp);
     cout << tmp.username << " " << tmp.name << " " << tmp.mailAddress << " " << tmp.privilege << "\n";
 }
 
 //TODO 用户购买车票后调用addOrderNum函数,其记录的订单数加一
 int User_Control::user_addOrderNum(const String<21> &username) {
-    vector<User> b_user = username_BPT.find(String<21> (username));
+    vector<User> b_user = username_BPT.find(String<21> (username).hash_value);
     if (b_user.empty()) throw "error";
     User u = b_user[0];
     User tmp = u;
     tmp.TotalOrder++;
-    username_BPT.modify(username , u , tmp);
+    username_BPT.modify(username.hash_value , u , tmp);
     return tmp.TotalOrder;
 }

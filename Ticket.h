@@ -45,7 +45,7 @@ public:
 class Ticket_Control{
     friend class Train;
 private:
-    BPlusTree<String<40> , Ticket, 200, 1000, 20000> ticket_BPT;// pair(车站，发车日期) —— 车票
+    BPlusTree<int , Ticket> ticket_BPT;// pair(车站，发车日期) —— 车票
 
     void addTicket(const String<40> &station , const Ticket &t);
     void delTicket(const String<40> &station , const Ticket &t);
@@ -58,9 +58,7 @@ public:
     vector<Ticket> find(const String<40> &trainID);
 
     void addTicket(const Train &t);
-    void buyTicket(const String<21> &username , const Train &t , const String<40> &st , const String<40> &ed , const date &d , int Stationnum , int isQue , int OrderNo);
-    vector<pair<Ticket , Ticket>> queryTransTicket(const String<40> &st , const String<40> &ed , const date &d);
-    vector<pair<pair<int , int> , pair<Ticket , Ticket>>> queryTransfer(const Train &t , const String<40> &st , const String<40> &ed , const date &d , int type);
+    void buyTicket(const String<21> &username , const String<21> &trainID , const String<40> &st , const String<40> &ed , const date &d , int Stationnum , int isQue , int OrderNo);
     void queryTransfer(const String<40> &st , const String<40> &ed , const date &d , int type);
     void que_BuyTicket(const String<21> &username , const Order &refund_o);
 };
