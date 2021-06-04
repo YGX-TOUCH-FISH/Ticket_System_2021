@@ -76,12 +76,6 @@ namespace RA {
         }
         /*  compare operator                          */
         bool operator==(const String &ec) const {
-//            size_t l1 = strlen(str);
-//            size_t l2 = strlen(ec.str);
-//            if (l1 != l2) return false;
-//            for (int i = 0 ; i < l1 ; ++i)
-//                if (str[i] != ec.str[i])
-//                    return false;
             return hash_value == ec.hash_value;
         }
         bool operator <(const String &ec) const{

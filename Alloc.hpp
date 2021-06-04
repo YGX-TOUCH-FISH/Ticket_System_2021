@@ -11,7 +11,7 @@
 #include "Map.hpp"
 using namespace std;
 namespace RA {
-    template<typename InternInfo, typename HeadInfo, int CACHESIZE = 500>
+    template<typename InternInfo, typename HeadInfo, int CACHESIZE = 10000>
     class DiskMonitor{
     private:
         class Binary_Node {
