@@ -16,6 +16,56 @@ class Train{
     friend class Train_Control;
     friend class Ticket_Control;
 private:
+    struct data {
+        int StationName;
+        int Offset;
+        bool operator <(const data &ec) const {
+            return StationName < ec.StationName;
+        }
+    };
+    struct StationArray{
+    private:
+        void sort() {
+            quickSort(array, 1, StationNumber);
+        }
+        void quickSort(data a[], int low, int high) {
+            int mid;
+            if (low >= high) return;
+            mid = divide(a, low, high);
+            quickSort(a, low, mid-1);
+            quickSort(a, mid+1, high);
+        }
+        int divide(data a[], int low, int high) {
+            data k = a[low];
+            do {
+                while (low < high && !(a[high] < k)) --high;
+                if (low < high) { a[low] = a[high]; ++low; }
+                while (low < high && !(k < a[low])) ++low;
+                if (low < high) { a[high] = a[low]; --high; }
+            } while (low != high);
+            a[low] = k;
+            return low;
+        }
+
+    public:
+        int StationNumber = 0;
+        data array[101] {};
+
+        int operator[](const int &STATION_NAME) const{
+            data find;
+            find.StationName = STATION_NAME, find.Offset = 0;
+            int index = lower_bound(array, StationNumber, find);
+            return array[index].Offset;
+        };
+
+        StationArray(data a[], const int &size) {
+            for (int i = 1 ;  i <= size ; ++i)
+                array[i] = a[i];
+            StationNumber = size;
+            sort();
+        }
+    };
+
     String<21> TrainID;
     String<40> Stations[101]; //stationNum项
     int StationNum = 0;
@@ -30,6 +80,7 @@ private:
     int IsRelease = 0;
 
 public:
+
     Train() = default;
 
     Train(const String<21> &trainId, String<40> *stations, int stationNum, int seatNum, const int *priceSum, char type,
