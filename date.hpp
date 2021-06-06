@@ -41,14 +41,10 @@ public:
     }
 
     bool operator==(const date &rhs) const {
-//        return Month == rhs.Month &&
-//               Day == rhs.Day &&
-//               Hour == rhs.Hour &&
-//               Minute == rhs.Minute;
-        return Minute == rhs.Minute &&
-               Hour == rhs.Hour &&
+        return Month == rhs.Month &&
                Day == rhs.Day &&
-               Month == rhs.Month;
+               Hour == rhs.Hour &&
+               Minute == rhs.Minute;
     }
 
     bool operator!=(const date &rhs) const {

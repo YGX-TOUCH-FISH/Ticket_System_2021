@@ -63,7 +63,7 @@ void Order::show() const{
     Leave.show();
     cout << " -> " << To << " ";
     Arrive.show();
-    cout << " " << Price << " " << TicketNum << endl;
+    cout << " " << Price << " " << TicketNum << '\n';
 }
 
 bool Order::operator<(const Order &rhs) const {

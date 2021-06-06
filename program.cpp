@@ -15,7 +15,7 @@ Train_Control trainSystem;
 Ticket_Control ticketSystem;
 Order_Control orderSystem;
 
-extern map<String<21> , int> user_Online;//username —— pri: map
+extern std::unordered_map<int , int> user_Online;//username —— pri: map
 
 //TODO 语句处理(含一个参数)
 vector<string> Split(const std::string &cmd , char p){
@@ -32,24 +32,59 @@ vector<string> Split(const std::string &cmd , char p){
     return tmp;
 }
 
-//TODO 优化处理
 void Run(std::string &command){
-    if (command.substr(0 , 8) == "add_user") add_user(command);
-    else if (command.substr(0 , 5) == "login") login(command);
-    else if (command.substr(0 , 6) == "logout") logout(command);
-    else if (command.substr(0 , 13) == "query_profile") query_profile(command);
-    else if (command.substr(0 , 14) == "modify_profile") modify_profile(command);
-    else if (command.substr(0 , 9) == "add_train") add_train(command);
-    else if (command.substr(0 , 13) == "release_train") release_train(command);
-    else if (command.substr(0 , 11) == "query_train") query_train(command);
-    else if (command.substr(0 , 12) == "delete_train") delete_train(command);
-    else if (command.substr(0 , 12) == "query_ticket") query_ticket(command);
-    else if (command.substr(0 , 14) == "query_transfer") query_transfer(command);
-    else if (command.substr(0 , 10) == "buy_ticket") buy_ticket(command);
-    else if (command.substr(0 , 11) == "query_order") query_order(command);
-    else if (command.substr(0 , 13) == "refund_ticket") refund_ticket(command);
-    else if (command.substr(0 , 5) == "clean") Clean();
-    else if (command.substr(0 , 4) == "exit") Exit();
+    switch (command[0]) {
+        case 'a': {
+            if (command[4] == 'u') add_user(command);
+            else add_train(command);
+            break;
+        }
+        case 'b':
+            buy_ticket(command);
+            break;
+        case 'c':
+            Clean();
+            break;
+        case 'd':
+            delete_train(command);
+            break;
+        case 'l':{
+            if (command[3] == 'i') login(command);
+            else logout(command);
+            break;
+        }
+        case 'm':
+            modify_profile(command);
+            break;
+        case 'q':{
+            switch (command[9]) {
+                case 'f':
+                    query_profile(command);
+                    break;
+                case 'e':
+                    query_order(command);
+                    break;
+                case 'k':
+                    query_ticket(command);
+                    break;
+                case 'i':
+                    query_train(command);
+                    break;
+                default:
+                    query_transfer(command);
+                    break;
+            }
+            break;
+        }
+        case 'r':{
+            if (command[2] == 'l') release_train(command);
+            else refund_ticket(command);
+            break;
+        }
+        default:
+            Exit();
+            break;
+    }
 }
 
 void Init(){
@@ -87,42 +122,47 @@ void Init(){
 void add_user(std::string &cmd){
     vector<string> tmp;
     tmp = Split(cmd.substr(9) , ' ');
-    string cur_user , username , password , name , mailAddress;
+    String<21> username , cur_user;
+    String<31> password;
+    String<20> name;
+    String<31> mailAddress;
     int pri;
     for (int i = 0 ; i < tmp.size() ; i += 2){
-        if (tmp[i] == "-c"){
-            cur_user = tmp[i + 1];
+        switch (tmp[i][1]) {
+            case 'c':
+                cur_user = String<21> (tmp[i + 1]);
+                break;
+            case 'u':
+                username = String<21> (tmp[i + 1]);
+                break;
+            case 'p':
+                password = String<31> (tmp[i + 1]);
+                break;
+            case 'n':
+                name = String<20> (tmp[i + 1]);
+                break;
+            case 'm':
+                mailAddress = String<31> (tmp[i + 1]);
+                break;
+            default:{
+                stringstream in;
+                in << tmp[i + 1];
+                in >> pri;
+                break;
+            }
         }
-        else if (tmp[i] == "-u"){
-            username = tmp[i + 1];
-        }
-        else if (tmp[i] == "-p"){
-            password = tmp[i + 1];
-        }
-        else if (tmp[i] == "-n"){
-            name = tmp[i + 1];
-        }
-        else if (tmp[i] == "-m"){
-            mailAddress = tmp[i + 1];
-        }
-        else if (tmp[i] == "-g"){
-            stringstream in;
-            in << tmp[i + 1];
-            in >> pri;
-        }
-        else throw "error";
     }
 
     if (userSystem.empty()) { //判断是否为第一个用户
-        User u(String<21>(username) , String<31>(password) , String<20>(name) , String<31>(mailAddress) , 10 , 0);
+        User u(username , password , name , mailAddress , 10);
         userSystem.add_user(u);
         std::cout << 0 << "\n";
     }
     else {
-        if (user_Online.find(String<21> (cur_user)) == user_Online.end()) throw "error (no login)";
-        int cur_pri = user_Online[String<21> (cur_user)];
+        if (user_Online.find(cur_user.hash_value) == user_Online.end()) throw "error (no login)";
+        int cur_pri = user_Online[cur_user.hash_value];
         if (cur_pri <= pri) throw "error (pri)";
-        User u(String<21>(username) , String<31>(password) , String<20>(name) , String<31>(mailAddress) , pri , 0);
+        User u(username , password , name , mailAddress , pri);
         userSystem.add_user(u);
         std::cout << 0 << "\n";
     }
@@ -131,42 +171,49 @@ void add_user(std::string &cmd){
 void login(std::string &cmd){
     vector<string> tmp;
     tmp = Split(cmd.substr(6) , ' ');
-    string username , password;
+    String<21> username;
+    String<31> password;
     for (int i = 0 ; i < tmp.size() ; i += 2){
-        if (tmp[i] == "-u") username = tmp[i + 1];
-        else if (tmp[i] == "-p") password = tmp[i + 1];
-        else throw "error";
+        switch (tmp[i][1]) {
+            case 'u':
+                username = String<21> (tmp[i + 1]);
+                break;
+            default:
+                password = String<31> (tmp[i + 1]);
+                break;
+        }
     }
-    userSystem.login(String<21> (username) , String<31> (password));
+    userSystem.login(username , password);
     std::cout << 0 << "\n";
 }
 
 void logout(std::string &cmd){
     vector<string> tmp;
     tmp = Split(cmd.substr(7) , ' ');
-    string username;
-    for (int i = 0 ; i < tmp.size() ; i += 2){
-        if (tmp[i] == "-u") username = tmp[i + 1];
-        else throw "error";
-    }
-    userSystem.logout(String<21> (username));
+    String<21> username(tmp[1]);
+    userSystem.logout(username);
     std::cout << 0 << "\n";
 }
 
 void query_profile(std::string &cmd){
     vector<string> tmp;
     tmp = Split(cmd.substr(14) , ' ');
-    string cur_user , username;
+    String<21> cur_user , username;
     for (int i = 0 ; i < tmp.size() ; i += 2){
-        if (tmp[i] == "-c") cur_user = tmp[i + 1];
-        else if (tmp[i] == "-u") username = tmp[i + 1];
-        else throw "error";
+        switch (tmp[i][1]) {
+            case 'c':
+                cur_user = String<21> (tmp[i + 1]);
+                break;
+            default:
+                username = String<21> (tmp[i + 1]);
+                break;
+        }
     }
-    if (user_Online.find(String<21> (cur_user)) == user_Online.end()) throw "error";
-    int cur_pri = user_Online[String<21> (cur_user)];
+    if (user_Online.find(cur_user.hash_value) == user_Online.end()) throw "error";
+    int cur_pri = user_Online[cur_user.hash_value];
     vector<User> container;
     container.clear();
-    container = userSystem.find(String<21> (username));
+    container = userSystem.find(username);
     if (container.empty()) throw "error";
     User q_user = container[0];
     if (cur_pri > q_user.getPrivilege() || cur_user == username){
@@ -178,31 +225,46 @@ void query_profile(std::string &cmd){
 void modify_profile(std::string &cmd){
     vector<string> tmp;
     tmp = Split(cmd.substr(15) , ' ');
-    string cur_user , username , password , name , mailAddress;
+    String<21> cur_user , username;
+    String<31> password;
+    String<20> name;
+    String<31> mailAddress;
     int pri = -1;
     for (int i = 0 ; i < tmp.size() ; i += 2){
-        if (tmp[i] == "-c") cur_user = tmp[i + 1];
-        else if (tmp[i] == "-u") username = tmp[i + 1];
-        else if (tmp[i] == "-p") password = tmp[i + 1];
-        else if (tmp[i] == "-n") name = tmp[i + 1];
-        else if (tmp[i] == "-m") mailAddress = tmp[i + 1];
-        else if (tmp[i] == "-g"){
-            stringstream in;
-            in << tmp[i + 1];
-            in >> pri;
+        switch (tmp[i][1]) {
+            case 'c':
+                cur_user = String<21> (tmp[i + 1]);
+                break;
+            case 'u':
+                username = String<21> (tmp[i + 1]);
+                break;
+            case 'p':
+                password = String<31> (tmp[i + 1]);
+                break;
+            case 'n':
+                name = String<20> (tmp[i + 1]);
+                break;
+            case 'm':
+                mailAddress = String<31> (tmp[i + 1]);
+                break;
+            case 'g':{
+                stringstream in;
+                in << tmp[i + 1];
+                in >> pri;
+                break;
+            }
         }
-        else throw "error";
     }
-    if (user_Online.find(String<21> (cur_user)) == user_Online.end()) throw "error";
-    int cur_pri = user_Online[String<21> (cur_user)];
+    if (user_Online.find(cur_user.hash_value) == user_Online.end()) throw "error";
+    int cur_pri = user_Online[cur_user.hash_value];
     vector<User> container;
     container.clear();
-    container = userSystem.find(String<21> (username));
+    container = userSystem.find(username);
     if (container.empty()) throw "error";
     User m_user = container[0];
     if (pri != -1 && cur_pri <= pri) throw "error";
     if (cur_pri > m_user.getPrivilege() || cur_user == username){
-        userSystem.modify_user(m_user , String<31> (password) , String<20> (name) , String<31> (mailAddress) , pri);
+        userSystem.modify_user(m_user , password , name , mailAddress , pri);
     }
     else throw "error";
 }
@@ -210,38 +272,57 @@ void modify_profile(std::string &cmd){
 void add_train(std::string &cmd){
     vector<string> tmp;
     tmp = Split(cmd.substr(10) , ' ');
-    string trainID ,stations , prices , startTime , travelTimes , stopoverTimes , saleDate , type;
+    String<21> trainID;
+    string stations , prices , startTime , travelTimes , stopoverTimes , saleDate , type;
     int stationNum , seatNum;
     date StartTime{};
     for (int i = 0 ; i < tmp.size() ; i += 2){
-        if (tmp[i] == "-i") trainID = tmp[i + 1];
-        else if (tmp[i] == "-n"){
-            stringstream in;
-            in << tmp[i + 1];
-            in >> stationNum;
+        switch (tmp[i][1]) {
+            case 'i':
+                trainID = String<21> (tmp[i + 1]);
+                break;
+            case 'n': {
+                stringstream in;
+                in << tmp[i + 1];
+                in >> stationNum;
+                break;
+            }
+            case 'm':{
+                stringstream in;
+                in << tmp[i + 1];
+                in >> seatNum;
+                break;
+            }
+            case 's':
+                stations = tmp[i + 1];
+                break;
+            case 'p':
+                prices = tmp[i + 1];
+                break;
+            case 'x': {
+                startTime = tmp[i + 1];
+                vector<string> s = Split(startTime , ':');
+                int h , m;
+                stringstream in;
+                in << s[0] ; in >> h;
+                in.clear();
+                in << s[1] ; in >> m;
+                StartTime.reset(0 , 0 , h , m);
+                break;
+            }
+            case 't':
+                travelTimes = tmp[i + 1];
+                break;
+            case 'o':
+                stopoverTimes = tmp[i + 1];
+                break;
+            case 'd':
+                saleDate = tmp[i + 1];
+                break;
+            default:
+                type = tmp[i + 1];
+                break;
         }
-        else if (tmp[i] == "-m"){
-            stringstream in;
-            in << tmp[i + 1];
-            in >> seatNum;
-        }
-        else if (tmp[i] == "-s") stations = tmp[i + 1];
-        else if (tmp[i] == "-p") prices = tmp[i + 1];
-        else if (tmp[i] == "-x") {
-            startTime = tmp[i + 1];
-            vector<string> s = Split(startTime , ':');
-            int h , m;
-            stringstream in;
-            in << s[0] ; in >> h;
-            in.clear();
-            in << s[1] ; in >> m;
-            StartTime.reset(0 , 0 , h , m);
-        }
-        else if (tmp[i] == "-t") travelTimes = tmp[i + 1];
-        else if (tmp[i] == "-o") stopoverTimes = tmp[i + 1];
-        else if (tmp[i] == "-d") saleDate = tmp[i + 1];
-        else if (tmp[i] == "-y") type = tmp[i + 1];
-        else throw "error";
     }
     String<40> Stations[stationNum + 1];
     int Prices[stationNum + 1] , TravelTimes[stationNum + 1] , StopoverTimes[stationNum];
@@ -300,11 +381,8 @@ void add_train(std::string &cmd){
     in << s[1] ; in >> d;
     in.clear();
     date saleEnd(mon , d , 0 , 0);
-
-    Train t(String<21> (trainID) , Stations , stationNum , seatNum , Prices , char (type[0]) , TravelTimes , StopoverTimes , StartTime , saleStart , saleEnd , 0);
+    Train t(trainID , Stations , stationNum , seatNum , Prices , char (type[0]) , TravelTimes , StopoverTimes , StartTime , saleStart , saleEnd , 0);
     trainSystem.addTrain(t);
-    int dayCount = saleEnd - saleStart;
-    trainSystem.addTrainSeat(String<21> (trainID) , seatNum , dayCount);
     std::cout << 0 << "\n";
 }
 
@@ -324,24 +402,29 @@ void release_train(std::string &cmd){
 void query_train(std::string &cmd){
     vector<string> tmp;
     tmp = Split(cmd.substr(12) , ' ');
-    string trainID , Time;
+    String<21> trainID;
+    string Time;
     date time{};
     for (int i = 0 ; i < tmp.size() ; i += 2){
-        if (tmp[i] == "-i") trainID = tmp[i + 1];
-        else if (tmp[i] == "-d"){
-            Time = tmp[i + 1];
-            vector<string> s = Split(Time , '-');
-            int M , d;
-            stringstream in;
-            in << s[0] ; in >> M;
-            in.clear();
-            in << s[1] ; in >> d;
-            in.clear();
-            time.reset(M , d , 0 , 0);
+        switch (tmp[i][1]) {
+            case 'i':
+                trainID = String<21> (tmp[i + 1]);
+                break;
+            default: {
+                Time = tmp[i + 1];
+                vector<string> s = Split(Time , '-');
+                int M , d;
+                stringstream in;
+                in << s[0] ; in >> M;
+                in.clear();
+                in << s[1] ; in >> d;
+                in.clear();
+                time.reset(M , d , 0 , 0);
+                break;
+            }
         }
-        else throw "error";
     }
-    vector<Train> exist_train = trainSystem.findTrain(String<21>(trainID));
+    vector<Train> exist_train = trainSystem.findTrain(trainID);
     if (exist_train.empty()) throw "no findTrain";
     Train q_train = exist_train[0];
     trainSystem.queryTrain(q_train , time);
@@ -362,101 +445,37 @@ void query_ticket(const std::string &cmd){
     int type = 0; // 0 for time ; 1 for cost
     date q_time{};
     for (int i = 0 ; i < tmp.size() ; i += 2){
-        if (tmp[i] == "-s") st = tmp[i + 1];
-        else if (tmp[i] == "-t") ed = tmp[i + 1];
-        else if (tmp[i] == "-d") {
-            Time = tmp[i + 1];
-            vector<string> s = Split(Time , '-');
-            int M , d;
-            stringstream in;
-            in << s[0] ; in >> M;
-            in.clear();
-            in << s[1] ; in >> d;
-            in.clear();
-            q_time.reset(M , d , 0 , 0);
+        switch (tmp[i][1]) {
+            case 's':
+                st = tmp[i + 1];
+                break;
+            case 't':
+                ed = tmp[i + 1];
+                break;
+            case 'd': {
+                Time = tmp[i + 1];
+                vector<string> s = Split(Time , '-');
+                int M , d;
+                stringstream in;
+                in << s[0] ; in >> M;
+                in.clear();
+                in << s[1] ; in >> d;
+                in.clear();
+                q_time.reset(M , d , 0 , 0);
+                break;
+            }
+            default:{
+                if (tmp[i + 1] == "time") type = 0;
+                else type = 1;
+                break;
+            }
         }
-        else if (tmp[i] == "-p"){
-            if (tmp[i + 1] == "time") type = 0;
-            else type = 1;
-        }
-        else throw "error";
     }
     if (st == ed) {
         cout << 0 << "\n";
         return;
     }
-    vector<Ticket> begin_station = ticketSystem.find(String<40> (st));
-    vector<Ticket> end_station = ticketSystem.find(String<40> (ed));
-    begin_station.sort();
-    end_station.sort();
-
-    vector<Ticket> begin_ans , end_ans;
-    int p1 = 0 , p2 = 0;
-    while (p1 < begin_station.size() && p2 < end_station.size()){
-        if (begin_station[p1] == end_station[p2]) {
-            if (begin_station[p1].StationNo >= end_station[p2].StationNo) {
-                p1++ ; p2++;
-                continue;
-            }
-            date salebegin = begin_station[p1].SaleDate_begin + begin_station[p1].StartDayTime + date(0, 0, 0, begin_station[p1].LeaveTime);
-            date saleend = begin_station[p1].SaleDate_end + begin_station[p1].StartDayTime + date(0, 0, 0, begin_station[p1].LeaveTime);
-            if (cmp(salebegin , q_time) && cmp(q_time , saleend)){
-                begin_ans.push_back(begin_station[p1]);
-                end_ans.push_back(end_station[p2]);
-            }
-            p1++ ; p2++;
-        }
-        else if (begin_station[p1] < end_station[p2]) p1++;
-        else p2++;
-    }
-
-    vector<pair<pair<int , String<21>> , int>> ans_container;
-    if (type == 0){//time
-        for (int i = 0 ; i < begin_ans.size() ; ++i){
-            ans_container.push_back(make_pair(make_pair(end_ans[i].ArrivalTime - begin_ans[i].LeaveTime , begin_ans[i].TrainID) , i));
-        }
-        ans_container.sort();
-        cout << ans_container.size() << "\n";
-        for (int i = 0 ; i < ans_container.size() ; ++i){
-            int num =  ans_container[i].second;
-            cout << begin_ans[num].TrainID << " " << st << " ";
-            date tmp1 = begin_ans[num].SaleDate_begin; tmp1 += begin_ans[num].StartDayTime;
-            tmp1 += date(0 , 0 , 0 , begin_ans[num].LeaveTime);
-            int no = q_time - tmp1;
-            tmp1 += date(0 , no - 1 , 0 , 0);
-            tmp1.show();
-            cout << " -> " << ed << " ";
-            date tmp2 = end_ans[num].SaleDate_begin; tmp2 += end_ans[num].StartDayTime;
-            tmp2 += date(0 , 0 , 0 , end_ans[num].ArrivalTime);
-            tmp2 += date(0 , no - 1 , 0 , 0);
-            tmp2.show();
-            cout << " " << end_ans[num].Price - begin_ans[num].Price;
-            cout << " " << trainSystem.getSeatNum(begin_ans[num].TrainID , String<40> (st) , String<40> (ed) , no) << "\n";
-        }
-    }
-    else {//cost
-        for (int i = 0 ; i < begin_ans.size() ; ++i){
-            ans_container.push_back(make_pair(make_pair(end_ans[i].Price - begin_ans[i].Price , begin_ans[i].TrainID) , i));
-        }
-        ans_container.sort();
-        cout << ans_container.size() << "\n";
-        for (int i = 0 ; i < ans_container.size() ; ++i){
-            int num =  ans_container[i].second;
-            cout << begin_ans[num].TrainID << " " << st << " ";
-            date tmp1 = begin_ans[num].SaleDate_begin; tmp1 += begin_ans[num].StartDayTime;
-            tmp1 += date(0 , 0 , 0 , begin_ans[num].LeaveTime);
-            int no = q_time - tmp1;
-            tmp1 += date(0 , no - 1 , 0 , 0);
-            tmp1.show();
-            cout << " -> " << ed << " ";
-            date tmp2 = end_ans[num].SaleDate_begin; tmp2 += end_ans[num].StartDayTime;
-            tmp2 += date(0 , 0 , 0 , end_ans[num].ArrivalTime);
-            tmp2 += date(0 , no - 1 , 0 , 0);
-            tmp2.show();
-            cout << " " << end_ans[num].Price - begin_ans[num].Price;
-            cout << " " << trainSystem.getSeatNum(begin_ans[num].TrainID , String<40> (st) , String<40> (ed) , no) << "\n";
-        }
-    }
+    ticketSystem.queryTicket(String<40> (st) , String<40> (ed) , q_time , type);
 }
 
 void query_transfer(const std::string &cmd){
@@ -466,24 +485,31 @@ void query_transfer(const std::string &cmd){
     int type = 0; // 0 for time ; 1 for cost
     date q_time{};
     for (int i = 0 ; i < tmp.size() ; i += 2){
-        if (tmp[i] == "-s") st = tmp[i + 1];
-        else if (tmp[i] == "-t") ed = tmp[i + 1];
-        else if (tmp[i] == "-d") {
-            Time = tmp[i + 1];
-            vector<string> s = Split(Time , '-');
-            int M , d;
-            stringstream in;
-            in << s[0] ; in >> M;
-            in.clear();
-            in << s[1] ; in >> d;
-            in.clear();
-            q_time.reset(M , d , 0 , 0);
+        switch (tmp[i][1]) {
+            case 's':
+                st = tmp[i + 1];
+                break;
+            case 't':
+                ed = tmp[i + 1];
+                break;
+            case 'd': {
+                Time = tmp[i + 1];
+                vector<string> s = Split(Time , '-');
+                int M , d;
+                stringstream in;
+                in << s[0] ; in >> M;
+                in.clear();
+                in << s[1] ; in >> d;
+                in.clear();
+                q_time.reset(M , d , 0 , 0);
+                break;
+            }
+            default:{
+                if (tmp[i + 1] == "time") type = 0;
+                else type = 1;
+                break;
+            }
         }
-        else if (tmp[i] == "-p"){
-            if (tmp[i + 1] == "time") type = 0;
-            else type = 1;
-        }
-        else throw "error";
     }
     ticketSystem.queryTransfer(String<40> (st) , String<40> (ed) , q_time , type);
 }
@@ -491,47 +517,62 @@ void query_transfer(const std::string &cmd){
 void buy_ticket(const std::string &cmd){
     vector<string> tmp;
     tmp = Split(cmd.substr(11) , ' ');
-    string username , trainID , Time , st , ed;
+    String<21> username , trainID;
+    string Time , st , ed;
     int num , isQue = 0; // 0 for false ; 1 for true
     date time{};
     for (int i = 0 ; i < tmp.size() ; i += 2){
-        if (tmp[i] == "-u") username = tmp[i + 1];
-        else if (tmp[i] == "-i") trainID = tmp[i + 1];
-        else if (tmp[i] == "-d") {
-            Time = tmp[i + 1];
-            vector<string> s = Split(Time , '-');
-            int M , d;
-            stringstream in;
-            in << s[0] ; in >> M;
-            in.clear();
-            in << s[1] ; in >> d;
-            in.clear();
-            time.reset(M , d , 0 , 0);
+        switch (tmp[i][1]) {
+            case 'u':
+                username = String<21> (tmp[i + 1]);
+                break;
+            case 'i':
+                trainID = String<21> (tmp[i + 1]);
+                break;
+            case 'd':{
+                Time = tmp[i + 1];
+                vector<string> s = Split(Time , '-');
+                int M , d;
+                stringstream in;
+                in << s[0] ; in >> M;
+                in.clear();
+                in << s[1] ; in >> d;
+                in.clear();
+                time.reset(M , d , 0 , 0);
+                break;
+            }
+            case 'n':{
+                stringstream in;
+                in << tmp[i + 1];
+                in >> num;
+                break;
+            }
+            case 'f':{
+                st = tmp[i + 1];
+                break;
+            }
+            case 't':{
+                ed = tmp[i + 1];
+                break;
+            }
+            default:{
+                if (tmp[i + 1] == "false") isQue = 0;
+                else isQue = 1;
+                break;
+            }
         }
-        else if (tmp[i] == "-n"){
-            stringstream in;
-            in << tmp[i + 1];
-            in >> num;
-        }
-        else if (tmp[i] == "-f") st = tmp[i + 1];
-        else if (tmp[i] == "-t") ed = tmp[i + 1];
-        else if (tmp[i] == "-q"){
-            if (tmp[i + 1] == "false") isQue = 0;
-            else isQue = 1;
-        }
-        else throw "error";
     }
-    if (user_Online.find(String<21> (username)) == user_Online.end()) throw "error (no login)";
+    if (user_Online.find(username.hash_value) == user_Online.end()) throw "error (no login)";
     if (num <= 0) throw "error";
-    int no = userSystem.user_addOrderNum(String<21> (username));
-    ticketSystem.buyTicket(String<21> (username) , String<21> (trainID) , String<40> (st) , String<40> (ed) , time , num , isQue , no);
+    int no = userSystem.user_addOrderNum(username);
+    ticketSystem.buyTicket(username , trainID , String<40> (st) , String<40> (ed) , time , num , isQue , no);
 }
 
 void query_order(const std::string &cmd){
     vector<string> tmp;
     tmp = Split(cmd.substr(12) , ' ');
     String<21> username(tmp[1]);
-    if (user_Online.find(username) == user_Online.end()) throw "error";
+    if (user_Online.find(username.hash_value) == user_Online.end()) throw "error";
     vector<Order> exist_Order = orderSystem.findOrder(username);
     if (exist_Order.empty()) cout << 0 << "\n";
     else {
@@ -546,68 +587,46 @@ void query_order(const std::string &cmd){
 void refund_ticket(const std::string &cmd){
     vector<string> tmp;
     tmp = Split(cmd.substr(14) , ' ');
-    string username;
+    String<21> username;
     int num = 1;
     for (int i = 0 ; i < tmp.size() ; i += 2){
-        if (tmp[i] == "-u") username = tmp[i + 1];
-        else if (tmp[i] == "-n"){
-            stringstream in;
-            in << tmp[i + 1];
-            in >> num;
+        switch (tmp[i][1]) {
+            case 'u':
+                username = String<21> (tmp[i + 1]);
+                break;
+            default:{
+                stringstream in;
+                in << tmp[i + 1];
+                in >> num;
+                break;
+            }
         }
     }
-    if (user_Online.find(String<21> (username)) == user_Online.end()) throw "error (no login)";
-    vector<Order> exist_Order = orderSystem.findOrder(String<21> (username));
+    if (user_Online.find(username.hash_value) == user_Online.end()) throw "error (no login)";
+    vector<Order> exist_Order = orderSystem.findOrder(username);
     if (exist_Order.empty()) throw "error";
     exist_Order.sort();
     if (num > exist_Order.size() || num <= 0) throw "error";
     Order r_order = exist_Order[exist_Order.size() - num];
     if (r_order.getStatus() == 1){
-        orderSystem.refundOrder(String<21> (username) , r_order);
-        ticketSystem.que_BuyTicket(String<21> (username) , r_order);//username没用
+        orderSystem.refundOrder(username , r_order);
+        ticketSystem.que_BuyTicket(username , r_order);//username没用
     }
     else if (r_order.getStatus() == 2){
-        orderSystem.refundOrder(String<21> (username) , r_order);
+        orderSystem.refundOrder(username , r_order);
     }
     else throw "error";
     cout << 0 << "\n";
     //更改order 更改余票信息 查看候补队列是否能够购买
 }
 
-
-
 void Clean(){
-//    fstream o;
-//    o.open("users.dat" , ios::out);
-//    o.close();
-//    o.open("users_BPT.dat" , ios::out);
-//    o.close();
-//    o.open("Order_BPT.dat" , ios::out);
-//    o.close();
-//    o.open("Order.dat" , ios::out);
-//    o.close();
-//    o.open("pendingOrder_BPT.dat" , ios::out);
-//    o.close();
-//    o.open("pendingOrder.dat" , ios::out);
-//    o.close();
-//    o.open("tickets_BPT.dat" , ios::out);
-//    o.close();
-//    o.open("Ticket.dat" , ios::out);
-//    o.close();
-//    o.open("train_BPT.dat" , ios::out);
-//    o.close();
-//    o.open("Train.dat" , ios::out);
-//    o.close();
-//    o.open("trainSeat_BPT.dat" , ios::out);
-//    o.close();
-//    o.open("trainSeat.dat" , ios::out);
-//    o.close();
     userSystem.restart();
     ticketSystem.restart();
     trainSystem.restart();
     orderSystem.restart();
     user_Online.clear();
-    cout << 0 << endl;
+    cout << 0 << '\n';
 }
 
 void Exit(){

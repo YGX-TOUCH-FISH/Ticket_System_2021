@@ -28,7 +28,6 @@ private:
     date SaleDate_begin{};
     date SaleDate_end{};
     int IsRelease = 0;
-    int PendingNum;
 
 public:
     Train() = default;
@@ -64,13 +63,15 @@ public:
 
 class Train_Control{
 private:
-    BPlusTree<int , Train, 200, 0> trainID_BPT;
-    BPlusTree<pair<String<21> , int> , Train_Seat, 200, 0>  trainSeat_BPT;// pair<trainID , 车次> —— seat
+    BPlusTree<int , Train, 200, 0, 0> trainID_BPT;
+    BPlusTree<pair<String<21> , int> , Train_Seat, 200, 0, 0>  trainSeat_BPT;// pair<trainID , 车次> —— seat
+    BPlusTree<int , int, 200, 0, 0> trainPendingNum_BPT;
 
 public:
     Train_Control(){
         trainID_BPT.initialize("train_BPT.dat" , "Train.dat");
         trainSeat_BPT.initialize("trainSeat_BPT.dat" , "trainSeat.dat");
+        trainPendingNum_BPT.initialize("trainPendingNum_BPT.dat" , "trainPendingNum.dat");
     }
 
     void restart();
@@ -79,13 +80,14 @@ public:
     void deleteTrain(const String<21> &trainID);
     void releaseTrain(const Train &t);
     void queryTrain(const Train &t , date &d);
-    int addPendingOrderNum(const Train &t , int no);
+    int addPendingOrderNum(const String<21> &trainID , int no);
 
-    vector<Train_Seat> findSeat(const String<21> &trainID , int no);
-    void addTrainSeat(const String<21> &trainID , int num , int dayCount);
     int getSeatNum(const String<21> &trainID , int st , int ed , int no);
-    int getSeatNum(const String<21> &trainID ,const String<40> &st , const String<40> &ed , int no);
     void modifySeat(const String<21> &trainID , int st , int ed , int no , int changeNum);
     void modifySeat(const String<21> &trainID ,const String<40> &st , const String<40> &ed , int no , int changeNum);
+
+    //TODO delete
+    vector<Train_Seat> findSeat(const String<21> &trainID , int no);
+    int getSeatNum(const String<21> &trainID ,const String<40> &st , const String<40> &ed , int no);
 };
 #endif //TRAINSTATION_TRAIN_H

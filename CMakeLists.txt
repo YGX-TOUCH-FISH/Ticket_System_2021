@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(TrainStation)
 
 set(CMAKE_CXX_STANDARD 14)
-add_compile_options(-std=c++11 -O2)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}   -Ofast ")
 
 add_executable(code
         Alloc.hpp
