@@ -7,7 +7,7 @@
 //TODO——————————————————————————————————————————Train类函数————————————————————————————————————————————————————————————//
 Train::Train(const String<21> &trainId, String<40> *stations, int stationNum, int seatNum, const int *priceSum, char type,
              const int *travelTimeSum, const int *stopoverTimeSum, const date &startDayTime, const date &saleDateBegin,
-             const date &saleDateEnd , int isRelease = 0){
+             const date &saleDateEnd , const StationHashArray &stationHash, int isRelease = 0){
     TrainID = trainId;
     StationNum = stationNum;
     SeatNum = seatNum;
@@ -19,6 +19,7 @@ Train::Train(const String<21> &trainId, String<40> *stations, int stationNum, in
     for (int i = 2 ; i <= stationNum ; ++i) PriceSum[i] = priceSum[i];
     for (int i = 2 ; i <= stationNum ; ++i) TravelTimeSum[i] = travelTimeSum[i];
     for (int i = 2 ; i < stationNum ; ++i) StopoverTimeSum[i] = stopoverTimeSum[i];
+    StationHash = stationHash;
     IsRelease = isRelease;
 }
 
@@ -35,6 +36,7 @@ Train &Train::operator=(const Train &t) {
     for (int i = 2 ; i <= StationNum ; ++i) PriceSum[i] = t.PriceSum[i];
     for (int i = 2 ; i <= StationNum ; ++i) TravelTimeSum[i] = t.TravelTimeSum[i];
     for (int i = 2 ; i < StationNum ; ++i) StopoverTimeSum[i] = t.StopoverTimeSum[i];
+    StationHash = t.StationHash;
     IsRelease = t.IsRelease;
     return *this;
 }
@@ -126,7 +128,7 @@ void Train_Control::releaseTrain(const Train &t) {
     re_t.IsRelease = 1;
     trainID_BPT.modify(t.TrainID.hash_value , t , re_t);
     Train_Seat a(t.SeatNum);
-    for (int i = 1 ; i <= t.SaleDate_end - t.SaleDate_begin ; ++i) trainSeat_BPT.insert(make_pair(t.TrainID , i) , a);
+    for (int i = 1 ; i <= t.SaleDate_end - t.SaleDate_begin ; ++i) trainSeat_BPT.insert(make_pair(t.TrainID.hash_value , i) , a);
     trainPendingNum_BPT.insert(t.TrainID.hash_value , 0);
 }
 
@@ -134,7 +136,7 @@ void Train_Control::queryTrain(const Train &t, date &d) {
     if (cmp(t.SaleDate_begin , d) && cmp(d , t.SaleDate_end)){
         if (t.IsRelease == 1){
             int No = d - t.SaleDate_begin;
-            vector<Train_Seat> tmp = trainSeat_BPT.find(make_pair(t.TrainID , No));
+            vector<Train_Seat> tmp = trainSeat_BPT.find(make_pair(t.TrainID.hash_value , No));
             Train_Seat t_seat = tmp[0];
             std::cout << t.TrainID << " " << t.Type << "\n";
             std::cout << t.Stations[1] << " " << "xx-xx xx:xx" << " -> ";
@@ -142,17 +144,16 @@ void Train_Control::queryTrain(const Train &t, date &d) {
             std::cout << " " << 0 << " " << t_seat.seat[1] << "\n"; //始发站
             for (int i = 2 ; i < t.StationNum ; ++i){
                 std::cout << t.Stations[i] << " ";
-                (d + date(0 , 0 , 0 ,t.TravelTimeSum[i] + t.StopoverTimeSum[i - 1])).show();
+                (d += date(0 , 0 , 0 ,t.TravelTimeSum[i] - t.TravelTimeSum[i - 1])).show();
                 std::cout << " -> ";
-                (d + date(0 , 0 , 0 , t.TravelTimeSum[i] + t.StopoverTimeSum[i])).show();
+                (d += date(0 , 0 , 0 , t.StopoverTimeSum[i] - t.StopoverTimeSum[i - 1])).show();
                 std::cout << " " << t.PriceSum[i] << " " << t_seat.seat[i] << "\n";
             }
             std::cout << t.Stations[t.StationNum] << " ";
-            (d + date(0 , 0 , 0 , t.TravelTimeSum[t.StationNum] + t.StopoverTimeSum[t.StationNum - 1])).show();
+            (d += date(0 , 0 , 0 , t.TravelTimeSum[t.StationNum] - t.TravelTimeSum[t.StationNum - 1])).show();
             std::cout << " -> " << "xx-xx xx:xx " << t.PriceSum[t.StationNum] << " " << "x" << "\n";
         }
         else{
-            int No = d - t.SaleDate_begin;
             int t_seat = t.SeatNum;
             std::cout << t.TrainID << " " << t.Type << "\n";
             std::cout << t.Stations[1] << " " << "xx-xx xx:xx" << " -> ";
@@ -160,13 +161,13 @@ void Train_Control::queryTrain(const Train &t, date &d) {
             std::cout << " " << 0 << " " << t_seat << "\n"; //始发站
             for (int i = 2 ; i < t.StationNum ; ++i){
                 std::cout << t.Stations[i] << " ";
-                (d + date(0 , 0 , 0 ,t.TravelTimeSum[i] + t.StopoverTimeSum[i - 1])).show();
+                (d += date(0 , 0 , 0 ,t.TravelTimeSum[i] - t.TravelTimeSum[i - 1])).show();
                 std::cout << " -> ";
-                (d + date(0 , 0 , 0 , t.TravelTimeSum[i] + t.StopoverTimeSum[i])).show();
+                (d += date(0 , 0 , 0 , t.StopoverTimeSum[i] - t.StopoverTimeSum[i - 1])).show();
                 std::cout << " " << t.PriceSum[i] << " " << t_seat << "\n";
             }
             std::cout << t.Stations[t.StationNum] << " ";
-            (d + date(0 , 0 , 0 , t.TravelTimeSum[t.StationNum] + t.StopoverTimeSum[t.StationNum - 1])).show();
+            (d += date(0 , 0 , 0 , t.TravelTimeSum[t.StationNum] - t.TravelTimeSum[t.StationNum - 1])).show();
             std::cout << " -> " << "xx-xx xx:xx " << t.PriceSum[t.StationNum] << " " << "x" << "\n";
         }
     }
@@ -182,45 +183,23 @@ int Train_Control::addPendingOrderNum(const String<21> &trainID  , int no) {
 }
 
 //TODO—————————————————about TrainSeat———————————————————//
-vector<Train_Seat> Train_Control::findSeat(const String<21> &trainID , int no) {
-    vector<Train_Seat> tmp = trainSeat_BPT.find(make_pair(trainID , no));
-    return tmp;
-}
-
 int Train_Control::getSeatNum(const String<21> &trainID , int st , int ed , int no) {
-    vector<Train_Seat> tmp = trainSeat_BPT.find(make_pair(trainID , no));
+    vector<Train_Seat> tmp = trainSeat_BPT.find(make_pair(trainID.hash_value , no));
     Train_Seat t_train = tmp[0];
     int ans = 1e9 + 7;
     for (int i = st ; i < ed ; ++i){
-        ans = min(t_train.seat[i] , ans);
-    }
-    return ans;
-}
-
-int Train_Control::getSeatNum(const String<21> &trainID, const String<40> &st, const String<40> &ed, int no) {
-    vector<Train> tmp = trainID_BPT.find(trainID.hash_value);
-    Train t = tmp[0];
-    int s = 0 , e = 0;
-    for (int i = 1 ; i <= t.StationNum ; ++i){
-        if (t.Stations[i] == st) s = i;
-        else if (t.Stations[i] == ed) e = i;
-    }
-    vector<Train_Seat> tmp2 = trainSeat_BPT.find(make_pair(trainID , no));
-    Train_Seat t_train = tmp2[0];
-    int ans = 1e9 + 7;
-    for (int i = s ; i < e ; ++i){
         ans = min(t_train.seat[i] , ans);
     }
     return ans;
 }
 
 void Train_Control::modifySeat(const String<21> &trainID, int st, int ed, int no, int changeNum) {
-    vector<Train_Seat> tmp = trainSeat_BPT.find(make_pair(trainID , no));
+    vector<Train_Seat> tmp = trainSeat_BPT.find(make_pair(trainID.hash_value , no));
     Train_Seat t_train = tmp[0];
     for (int i = st ; i < ed ; ++i){
         t_train.seat[i] -= changeNum;
     }
-    trainSeat_BPT.modify(make_pair(trainID , no) , tmp[0] , t_train);
+    trainSeat_BPT.modify(make_pair(trainID.hash_value , no) , tmp[0] , t_train);
 }
 
 void Train_Control::modifySeat(const String<21> &trainID , const String<40> &st , const String<40> &ed , int no , int changeNum) {
@@ -229,13 +208,16 @@ void Train_Control::modifySeat(const String<21> &trainID , const String<40> &st 
     int s = 0 , e = 0;
     for (int i = 1 ; i <= t.StationNum ; ++i){
         if (t.Stations[i] == st) s = i;
-        else if (t.Stations[i] == ed) e = i;
+        else if (t.Stations[i] == ed) {
+            e = i;
+            break;
+        }
     }
-    vector<Train_Seat> tmp2 = trainSeat_BPT.find(make_pair(trainID , no));
+    vector<Train_Seat> tmp2 = trainSeat_BPT.find(make_pair(trainID.hash_value , no));
     Train_Seat t_train = tmp2[0];
     for (int i = s ; i < e ; ++i){
         t_train.seat[i] -= changeNum;
     }
-    trainSeat_BPT.modify(make_pair(trainID , no) , tmp2[0] , t_train);
+    trainSeat_BPT.modify(make_pair(trainID.hash_value , no) , tmp2[0] , t_train);
 }
 //———————————————————————————————————————————————*****————————————————————————————————————————————————————————————————//

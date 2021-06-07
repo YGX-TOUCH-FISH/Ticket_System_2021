@@ -105,11 +105,11 @@ void Order_Control::refundOrder(const String<21> &username, const Order &o) {
 }
 
 void Order_Control::addPendingOrder(const Order &o , int no , int pendingNum) {
-    pendingOrder.insert(make_pair(o.TrainID , no) , make_pair(pendingNum , o));
+    pendingOrder.insert(make_pair(o.TrainID.hash_value , no) , make_pair(pendingNum , o));
 }
 
 void Order_Control::delPendingOrder(const Order &o , int no , int pendingNum) {
-    pendingOrder.erase(make_pair(o.TrainID , no) , make_pair(pendingNum , o));
+    pendingOrder.erase(make_pair(o.TrainID.hash_value , no) , make_pair(pendingNum , o));
 }
 
 vector<Order> Order_Control::findOrder(const String<21> &username) {
@@ -117,7 +117,7 @@ vector<Order> Order_Control::findOrder(const String<21> &username) {
     return tmp;
 }
 
-vector<pair<int , Order>> Order_Control::findPendingOrder(const pair<String<21>, int> &t) {
+vector<pair<int , Order>> Order_Control::findPendingOrder(const pair<int, int> &t) {
     vector<pair<int , Order>> tmp = pendingOrder.find(t);
     return tmp;
 }

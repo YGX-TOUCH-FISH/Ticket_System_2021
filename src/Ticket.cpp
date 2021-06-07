@@ -90,15 +90,13 @@ void Ticket_Control::buyTicket(const String<21> &username, const String<21> &tra
     Train t = exist_train[0];
     if (t.IsRelease == 0) throw "error";
     if (num > t.SeatNum) throw "error";
-    int s = 0 , e = 0;
-    for (int i = 1 ; i <= t.StationNum ; ++i){
-        if (t.Stations[i] == st) s = i;
-        else if (t.Stations[i] == ed) e = i;
-    }
+    int s = t.StationHash[st.hash_value];
+    int e = t.StationHash[ed.hash_value];
+
     date salebegin = t.SaleDate_begin + t.StartDayTime + date(0,0,0,t.TravelTimeSum[s] + t.StopoverTimeSum[s]);
     date saleend = t.SaleDate_end + t.StartDayTime + date(0,0,0,t.TravelTimeSum[s] + t.StopoverTimeSum[s]);
     if (cmp(salebegin , d) && cmp(d , saleend)){
-        if (s == 0 || e == 0) throw "error";
+        if (s == -1 || e == -1) throw "error";
         if (s >= e) throw "error";
         date leave = t.SaleDate_begin; leave += t.StartDayTime;//leave为到st的时间
         date arrive = leave;
@@ -132,19 +130,16 @@ void Ticket_Control::buyTicket(const String<21> &username, const String<21> &tra
 }
 
 void Ticket_Control::que_BuyTicket(const String<21> &username , const Order &refund_o) {// 候补队列购票
-    vector<pair<int , Order>> tmp = orderSystem.findPendingOrder(make_pair(refund_o.TrainID , refund_o.StationNo));
+    vector<pair<int , Order>> tmp = orderSystem.findPendingOrder(make_pair(refund_o.TrainID.hash_value , refund_o.StationNo));
     tmp.sort();
     for (int i = 0 ; i < tmp.size() ; ++i){
         pair<int , Order> t = tmp[i];
         Order o = t.second;
         vector<Train> con = trainSystem.findTrain(o.TrainID);
         Train train = con[0];
-        int s = 0 , e = 0;
-        for (int j = 1 ; j <= train.StationNum ; ++j){
-            if (train.Stations[j] == o.From) s = j;
-            if (train.Stations[j] == o.To) e = j;
-        }
+        int s = train.StationHash[o.From.hash_value] , e = train.StationHash[o.To.hash_value];
         int left = trainSystem.getSeatNum(o.TrainID , s , e , o.StationNo);
+        if (left <= 0) break;
         if (o.TicketNum <= left) {
             trainSystem.modifySeat(o.TrainID , s , e , o.StationNo , o.TicketNum);
             orderSystem.delPendingOrder(o , o.StationNo , t.first);

@@ -49,8 +49,8 @@ public:
 
 class Order_Control{
 private:
-    BPlusTree<int , Order, 200, 5000 ,0> userOrders_BPT;
-    BPlusTree<pair<String<21> , int> , pair<int , Order>, 200, 1000, 0> pendingOrder;
+    BPlusTree<int , Order> userOrders_BPT;
+    BPlusTree<pair<int , int> , pair<int , Order>> pendingOrder;
 
 public:
     Order_Control(){
@@ -59,7 +59,7 @@ public:
     }
     void restart();
     vector<Order> findOrder(const String<21> &username);
-    vector<pair<int , Order>> findPendingOrder(const pair<String<21> , int> &t);
+    vector<pair<int , Order>> findPendingOrder(const pair<int , int> &t);
 
     void addOrder(const String<21> &username, const Order &o);
     void modifyOrder(const String<21> &username, const Order &old , const Order &New);

@@ -9,6 +9,7 @@
 #include <fstream>
 #include "exception.hpp"
 #include "Map.hpp"
+#include <stdio.h>
 using namespace std;
 namespace RA {
     template<typename InternInfo, typename HeadInfo, int CACHESIZE = 5000>
@@ -33,7 +34,7 @@ namespace RA {
             }
         };
     private:
-        fstream file;
+        FILE *file;
         Binary_Node *head = nullptr;
         Binary_Node *tail = nullptr;
         map<int, Binary_Node*> cache_map;
@@ -102,18 +103,21 @@ namespace RA {
     public:
         DiskMonitor() = default;
         ~DiskMonitor() {
-            Binary_Node *ptr = head;
-            while (ptr) {
-                if (ptr->isModified) {
-                    file.seekp(ptr->key);
-                    file.write(reinterpret_cast<const char *>(ptr->data), sizeof(InternInfo));
-                }
-                Binary_Node *tmp = ptr;
-                ptr = ptr->next;
-                delete tmp;
+//            Binary_Node *ptr = head;
+//            while (ptr) {
+//                if (ptr->isModified) {
+//                    file.seekp(ptr->key);
+//                    file.write(reinterpret_cast<const char *>(ptr->data), sizeof(InternInfo));
+//                }
+//                Binary_Node *tmp = ptr;
+//                ptr = ptr->next;
+//                delete tmp;
+//            }
+//            head = tail = nullptr;
+            if (file != nullptr) {
+                fclose(file);
+                file = nullptr;
             }
-            head = tail = nullptr;
-            file.close();
         }
 
         void clear() {
@@ -127,41 +131,59 @@ namespace RA {
                 delete tmp;
             }
             head = tail = nullptr;
-            file.close();
+            fclose(file);
+            clearerr(file);
         }
 
         void initialize(const string &filename) {
-            fstream test;
-            test.open(filename);
-            if (test.fail()) {
-                ofstream openfile(filename);
-                openfile.close();
+            if (file != nullptr) {
+                fclose(file);
+                clearerr(file);
             }
-            test.close();
-            file.open(filename);
+            file = fopen(filename.c_str(), "rb+");
+            if (file == nullptr) {
+                fclose(fopen(filename.c_str(), "a"));
+                file = fopen(filename.c_str(), "rb+");
+                if (!file) throw "system error";
+            }
+//            fstream test;
+//            test.open(filename);
+//            if (test.fail()) {
+//                ofstream openfile(filename);
+//                openfile.close();
+//            }
+//            test.close();
+//            file.open(filename);
         }
 
         bool empty() {
-            file.seekg(0, ios::end);
-            return (file.tellg() == 0);
+            fseek(file, 0, SEEK_END);
+            return (ftell(file) == 0);
+//            file.seekg(0, ios::end);
+//            return (file.tellg() == 0);
         }
 
         void read_HeadInfo(HeadInfo &headInfo) {
-            file.seekg(0);
-            file.read(reinterpret_cast<char *>(&headInfo), sizeof(HeadInfo));
+            fseek(file, 0, SEEK_SET);
+            fread(reinterpret_cast<void *>(&headInfo), sizeof(headInfo), 1, file);
+//            file.seekg(0);
+//            file.read(reinterpret_cast<char *>(&headInfo), sizeof(HeadInfo));
         }
 
         void write_HeadInfo(const HeadInfo &headInfo) {
-            file.seekp(0);
-            file.write(reinterpret_cast<const char *>(&headInfo), sizeof(HeadInfo));
+            fseek(file, 0, SEEK_SET);
+            fwrite(reinterpret_cast<const void *>(&headInfo), sizeof(headInfo), 1, file);
+//            file.seekp(0);
+//            file.write(reinterpret_cast<const char *>(&headInfo), sizeof(HeadInfo));
         }
 
         void read(int info_address, InternInfo &internInfo) {
             if (info_address < 0) throw bad_read_flow();
-
+            fseek(file, info_address, SEEK_SET);
+            fread(reinterpret_cast<void *>(&internInfo), sizeof(internInfo), 1, file);
 //            if (CACHESIZE <= 0) {
-                file.seekg(info_address);
-                file.read(reinterpret_cast<char *>(&internInfo), sizeof(internInfo));
+//                file.seekg(info_address);
+//                file.read(reinterpret_cast<char *>(&internInfo), sizeof(internInfo));
 //            }
 //            else {
 //                if (cache_find(info_address)) internInfo = cache_info(info_address);
@@ -182,9 +204,11 @@ namespace RA {
 
         void write(int info_address, const InternInfo &internInfo) {
             if (info_address < 0) throw bad_write_flow();
+            fseek(file, info_address, SEEK_SET);
+            fwrite(reinterpret_cast<const void *>(&internInfo), sizeof(internInfo), 1, file);
 //            if (CACHESIZE <= 0 ) {
-                file.seekp(info_address);
-                file.write(reinterpret_cast<const char *>(&internInfo), sizeof(internInfo));
+//                file.seekp(info_address);
+//                file.write(reinterpret_cast<const char *>(&internInfo), sizeof(internInfo));
 //            }
 //            else {
 //                if (cache_map.find(info_address) != cache_map.end()) {

@@ -2,25 +2,15 @@ cmake_minimum_required(VERSION 3.16)
 project(TrainStation)
 
 set(CMAKE_CXX_STANDARD 14)
-add_compile_options(-std=c++11 -O2)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}   -Ofast ")
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/datastructure)
 
 add_executable(code
-        Alloc.hpp
-        BPT.hpp
-        date.hpp
-        exception.hpp
-        main.cpp
-        Map.hpp
-        Order.cpp
-        Order.h
-        program.cpp
-        program.h
-        String.hpp
-        Ticket.cpp
-        Ticket.h
-        Train.cpp
-        Train.h
-        Users.cpp
-        Users.h
-        Vector.hpp
-        )
+        src/main.cpp
+        src/program.cpp
+        src/Order.cpp
+        src/Ticket.cpp
+        src/Train.cpp
+        src/Users.cpp)

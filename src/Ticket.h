@@ -10,7 +10,6 @@
 #include "Train.h"
 #include "Map.hpp"
 #include "Order.h"
-#include <algorithm>
 using namespace RA;
 
 extern Train_Control trainSystem;
@@ -67,7 +66,7 @@ public:
 class Ticket_Control{
     friend class Train;
 private:
-    BPlusTree<int , Ticket, 200, 6000, 0> ticket_BPT;// pair(车站，发车日期) —— 车票
+    BPlusTree<int , Ticket> ticket_BPT;// pair(车站，发车日期) —— 车票
 
     void addTicket(const String<40> &station , const Ticket &t);
     void delTicket(const String<40> &station , const Ticket &t);
